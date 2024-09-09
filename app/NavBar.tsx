@@ -14,14 +14,16 @@ interface NavLink {
     label: string;
     icon?: React.ReactNode;
 }
-const linkClasses = "font-semibold tracking-wide text-gray-300 hover:text-blue-400 hover:underline transition-colors duration-200";
+
+const linkClasses = "font-sans text-sm tracking-tight text-gray-300 hover:text-gray-100 transition-colors duration-200 uppercase";
+
 /**
  * Utility function to generate a string of class names for links.
  * @param {boolean} isActive - Whether the link is the active link.
  * @returns {string} A string of class names.
  */
 const getActiveLinkClasses = (isActive: boolean): string =>
-    `${linkClasses} ${isActive ? 'text-blue-500 underline' : ''}`;
+    `${linkClasses} ${isActive ? 'font-bold text-gray-100 border-b-2 border-blue-400' : 'font-medium'} `;
 
 /**
  * A functional component for rendering a list of navigation links.
@@ -61,7 +63,7 @@ const NavLinks: React.FC<{ links: NavLink[] }> = ({ links }: { links: NavLink[] 
  */
 function NavBar(): JSX.Element {
     const leftLinks: NavLink[] = [
-        { label: "Home", href: "/", icon: <HomeIcon className="h-6 w-6 text-gray-300 hover:text-blue-400" /> },
+        { label: "Home", href: "/", icon: <HomeIcon className="h-6 w-6 text-gray-300 hover:text-gray-100" /> },
         { label: "Story", href: "/story" },
         { label: "Career", href: "/career" },
         { label: "Achievements", href: "/achievements" },
@@ -74,7 +76,7 @@ function NavBar(): JSX.Element {
     ];
 
     return (
-        <nav className="border-b border-gray-600 bg-gray-900 mb-5 px-10 py-4 shadow-lg">
+        <nav className="bg-gradient-to-r from-gray-900 via-black to-gray-900 border-b border-gray-700 px-10 py-4 shadow-lg">
             <Grid columns="2" rows="1" gap="3">
                 <Flex direction="row" align="center" justify="start">
                     <Box as="div">
