@@ -103,7 +103,15 @@ function WelcomeSection() {
                     as="div"
                     className="relative w-[90%] h-[90%] border border-gray-700 rounded-lg shadow-lg overflow-hidden"
                 >
-
+                    <Image
+                        src="/pic/chuyVeraDallasCup.jpg"
+                        alt="Coach Chuy Vera at Dallas Cup"
+                        fill
+                        className="object-cover filter brightness-90 contrast-105 transition-transform duration-500 hover:scale-105"
+                        quality={100}
+                        priority
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
                 </Box>
             </Flex>
         </Grid>
