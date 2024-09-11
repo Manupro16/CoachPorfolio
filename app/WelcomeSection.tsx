@@ -31,7 +31,7 @@ function WelcomeSection() {
                 as="div"
                 justify="start"
                 align="start"
-                className="pt-5 pl-10 row-span-2 z-10"
+                className="pt-5 pl-10 z-10 row-span-1"
                 direction="column"
                 gap="4"
             >
@@ -40,6 +40,7 @@ function WelcomeSection() {
                     size="8"
                     weight="bold"
                     className="text-gray-100 leading-tight relative"
+                    style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)' }}
                 >
                     El Chuy Vera
                     <Box
@@ -51,6 +52,7 @@ function WelcomeSection() {
                     as="p"
                     size="4"
                     className="text-gray-300 leading-tight"
+                    style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)' }}
                 >
                     Professional Football Coach
                 </Text>
@@ -85,29 +87,12 @@ function WelcomeSection() {
                 </Button>
             </Flex>
 
-            {/* Simple Wave SVG */}
-            <Box
-                as="div"
-                className="absolute inset-y-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden"
-            >
-                <svg
-                    viewBox="0 0 1440 320"
-                    className="w-full h-full fill-current text-gray-900"
-                    preserveAspectRatio="none"
-                >
-                    <path
-                        id="wavePath"
-                        d="M0,128L48,138.7C96,149,192,171,288,181.3C384,192,480,192,576,176C672,160,768,128,864,112C960,96,1056,96,1152,128C1248,160,1344,224,1392,272L1440,304L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
-                    ></path>
-                </svg>
-            </Box>
-
             {/* Image Section with Improved Styling */}
             <Flex
                 as="div"
                 align="center"
                 justify="center"
-                className="relative h-full z-10"
+                className="relative h-full z-10 row-span-1"
             >
                 <Box
                     as="div"
@@ -127,8 +112,54 @@ function WelcomeSection() {
                     />
                 </Box>
             </Flex>
+
+            {/* SVG Background */}
+            <Box as="div" className="absolute inset-y-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
+                <svg viewBox="0 0 1440 320" className="w-full h-full fill-current text-gray-900" preserveAspectRatio="none">
+                    <path
+                        id="wavePath"
+                        d="M0,128L48,138.7C96,149,192,171,288,181.3C384,192,480,192,576,176C672,160,768,128,864,112C960,96,1056,96,1152,128C1248,160,1344,224,1392,256L1440,288L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+                    />
+                </svg>
+            </Box>
+            {/* Welcome Entry Section */}
+            <Flex
+                as="div"
+                align="center"
+                justify="center"
+                direction="column"
+                className="col-span-2 row-start-2 p-12 bg-black/70 rounded-lg text-center mt-10"
+            >
+                <Heading
+                    as="h2"
+                    size="8"
+                    className="text-gray-100 tracking-wide"
+                    style={{
+                        fontSize: '2rem',
+                        textShadow: '2px 2px 3px rgba(0, 0, 0, 0.7)',
+                        letterSpacing: '0.1em'
+                    }}
+                >
+                    Welcome to the Journey of Excellence
+                </Heading>
+                <Text
+                    as="p"
+                    size="5"
+                    className="text-gray-300 leading-relaxed pt-6 max-w-2xl"
+                    style={{
+                        fontSize: '1.25rem',
+                        lineHeight: '1.75',
+                        textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+                    }}
+                >
+                    Explore the world of Chuy Vera, a dedicated football coach who has inspired countless players and teams throughout his illustrious career. Here, you'll find a showcase of his achievements, philosophy, and the impact he's made on the footballing world. Prepare to be inspired as you delve into the story of a coach whose passion and expertise have transcended borders.
+                </Text>
+            </Flex>
+
         </Grid>
     );
 }
 
 export default WelcomeSection;
+
+
