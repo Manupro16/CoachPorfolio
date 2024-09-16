@@ -164,7 +164,7 @@ function WelcomeSection() {
             as="div"
             columns="1fr 1fr"
             rows="1fr 1fr"
-            className="relative overflow-hidden h-screen w-full bg-gradient-to-r from-black via-black/70 to-transparent"
+            className="relative overflow-hidden h-screen w-full bg-primary "
         >
             <Flex
                 as="div"

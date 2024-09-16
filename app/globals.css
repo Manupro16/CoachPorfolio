@@ -5,8 +5,11 @@
 /* globals.css */
 
 :root {
-  --font-geist-sans: 'Geist Sans', sans-serif;
-  --font-geist-mono: 'Geist Mono', monospace;
+  --color-primary: #1E3A8A; /* Updated to blue-700 */
+  --color-secondary: #1E40AF; /* You can adjust this if needed */
+  --color-accent: #F59E0B; /* Keep as is or adjust */
+  --color-background: #0D0D0D; /* Background color */
+  --color-foreground: #F5F5F5; /* Text color */
 }
 
 
