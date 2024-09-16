@@ -27,10 +27,10 @@ function ShowcaseSection() {
     return (
         <section className="relative overflow-hidden">
             {/* Background Gradient */}
-            <Box as="div" className="absolute inset-0 bg-gradient-to-r from-black via-primaryDark to-black opacity-50"></Box>
+            <Box as="div" className="absolute inset-0 bg-gradient-to-r from-black via-primaryDark to-black opacity-30"></Box>
 
             {/* Top SVG Wave */}
-            <Box as="div" className="absolute inset-x-0 top-0">
+            <Box as="div" className="absolute inset-x-0 top-0 fill-current text-primaryDark opacity-30">
                 <svg
                     viewBox="0 0 1440 320"
                     className="w-full h-32 sm:h-48 md:h-64 lg:h-80"
@@ -71,11 +71,10 @@ function ShowcaseSection() {
             <Box as="div" className="absolute inset-x-0 bottom-0">
                 <svg
                     viewBox="0 0 1440 320"
-                    className="w-full h-32 sm:h-48 md:h-64 lg:h-80"
+                    className="w-full h-32 sm:h-48 md:h-64 lg:h-80 fill-current text-primaryDark opacity-30 "
                     preserveAspectRatio="none"
                 >
                     <path
-                        fill="var(--color-primary-dark)"
                         fillOpacity="1"
                         d="M0,256L48,224C96,192,192,128,288,106.7C384,85,480,107,576,122.7C672,139,768,149,864,144C960,139,1056,117,1152,122.7C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                     ></path>
