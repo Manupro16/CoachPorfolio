@@ -127,7 +127,7 @@ const WelcomeEntry = () => (
         align="center"
         justify="center"
         direction="column"
-        className="col-span-2 row-start-2 p-12 bg-black/80 rounded-lg text-center mt-10"
+        className="col-span-2 row-start-2 p-12   text-center mt-10"
     >
         <Heading
             as="h2"
