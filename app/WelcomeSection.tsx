@@ -1,21 +1,23 @@
+// WelcomeSection.jsx
+
 'use client';
 
 import React, { useEffect } from 'react';
 import { gsap } from 'gsap';
-import { Box, Flex, Grid, Heading, Text, Button } from "@radix-ui/themes";
-import Image from "next/image";
+import { Box, Flex, Grid, Heading, Text, Button } from '@radix-ui/themes';
+import Image from 'next/image';
 
 // GSAP Animation
 const useWaveAnimation = () => {
     useEffect(() => {
-        gsap.to("#wavePath", {
+        gsap.to('#wavePath', {
             duration: 10,
             attr: {
-                d: "M0,144L48,154.7C96,165,192,187,288,197.3C384,208,480,208,576,192C672,176,768,144,864,128C960,112,1056,112,1152,144C1248,176,1344,240,1392,272L1440,304L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+                d: 'M0,144L48,154.7C96,165,192,187,288,197.3C384,208,480,208,576,192C672,176,768,144,864,128C960,112,1056,112,1152,144C1248,176,1344,240,1392,272L1440,304L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z',
             },
             repeat: -1,
             yoyo: true,
-            ease: "power1.inOut",
+            ease: 'power1.inOut',
         });
     }, []);
 };
@@ -25,11 +27,11 @@ const WelcomeHeading = () => (
         as="h1"
         size="8"
         weight="bold"
-        className="text-gray-100 leading-tight relative"
+        className="text-textLight leading-tight relative"
         style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)' }}
     >
         El Chuy Vera
-        <Box as="span" className="block h-[3px] w-1/2 bg-blue-500 mt-2" />
+        <Box as="span" className="block h-[3px] w-1/2 bg-primary mt-2" />
     </Heading>
 );
 
@@ -37,7 +39,7 @@ const Subheading = () => (
     <Text
         as="p"
         size="4"
-        className="text-gray-300 leading-tight"
+        className="text-textMuted leading-tight"
         style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)' }}
     >
         Professional Football Coach
@@ -46,19 +48,10 @@ const Subheading = () => (
 
 const Description = () => (
     <Box as="div" className="mt-5 max-w-xl">
-        <Heading
-            as="h2"
-            size="6"
-            weight="medium"
-            className="text-gray-100"
-        >
+        <Heading as="h2" size="6" weight="medium" className="text-textLight">
             Chuy's Professional Portfolio and Showcase of Achievements and Career.
         </Heading>
-        <Text
-            as="p"
-            size="4"
-            className="text-gray-300 leading-relaxed pt-1"
-        >
+        <Text as="p" size="4" className="text-textMuted leading-relaxed pt-1">
             As a dedicated football coach, Chuy Vera has spent decades shaping the future of Venezuelan
             football. His journey has seen him lead top teams like Estudiantes de Mérida, Zamora FC, and
             Deportivo Táchira to success, while his international experience, including a pivotal role at FC
@@ -70,7 +63,7 @@ const Description = () => (
 
 const CallToAction = () => (
     <Button
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 transition-colors"
+        className="mt-4 px-4 py-2 bg-primary text-white rounded-lg shadow-lg hover:bg-primaryDark transition-colors"
     >
         Explore More
     </Button>
@@ -85,7 +78,7 @@ const ImageSection = () => (
     >
         <Box
             as="div"
-            className="relative w-[90%] h-[90%] border border-gray-700 rounded-lg shadow-lg overflow-hidden transition-transform duration-500 hover:scale-105"
+            className="relative w-[90%] h-[90%] border border-borderDark rounded-lg shadow-lg overflow-hidden transition-transform duration-500 hover:scale-105"
         >
             <Image
                 src="/pic/chuyVeraDallasCup.jpg"
@@ -110,7 +103,7 @@ const WaveBackground = () => (
     >
         <svg
             viewBox="0 0 1440 320"
-            className="w-full h-full fill-current text-blue-900 opacity-30"
+            className="w-full h-full fill-current text-primaryDark opacity-30"
             preserveAspectRatio="none"
         >
             <path
@@ -127,12 +120,12 @@ const WelcomeEntry = () => (
         align="center"
         justify="center"
         direction="column"
-        className="col-span-2 row-start-2 text-center "
+        className="col-span-2 row-start-2 text-center"
     >
         <Heading
             as="h2"
             size="8"
-            className="text-gray-100 tracking-wide"
+            className="text-textLight tracking-wide"
             style={{
                 fontSize: '2rem',
                 textShadow: '2px 2px 3px rgba(0, 0, 0, 0.7)',
@@ -144,7 +137,7 @@ const WelcomeEntry = () => (
         <Text
             as="p"
             size="5"
-            className="text-gray-300 leading-relaxed pt-6 max-w-2xl"
+            className="text-textMuted leading-relaxed pt-6 max-w-2xl"
             style={{
                 fontSize: '1.25rem',
                 lineHeight: '1.75',
@@ -156,7 +149,7 @@ const WelcomeEntry = () => (
         <Box as="div" className="absolute inset-x-0 bottom-0">
             <svg
                 viewBox="0 0 1440 320"
-                className="w-full h-22 fill-current  text-blue-900 opacity-30"
+                className="w-full h-22 fill-current text-primaryDark opacity-30"
                 preserveAspectRatio="none"
             >
                 <path
@@ -172,7 +165,10 @@ function WelcomeSection() {
 
     return (
         <section className="relative overflow-hidden">
-            <Box as="div" className="absolute inset-0 bg-gradient-to-r from-black to-black via-blue-900  opacity-30" />
+            <Box
+                as="div"
+                className="absolute inset-0 bg-gradient-to-r from-black to-black via-primaryDark opacity-30"
+            />
             <Grid
                 as="div"
                 columns="1fr 1fr"
