@@ -110,7 +110,7 @@ const WaveBackground = () => (
     >
         <svg
             viewBox="0 0 1440 320"
-            className="w-full h-full fill-current text-gray-900"
+            className="w-full h-full fill-current text-blue-900 opacity-30"
             preserveAspectRatio="none"
         >
             <path
@@ -127,7 +127,7 @@ const WelcomeEntry = () => (
         align="center"
         justify="center"
         direction="column"
-        className="col-span-2 row-start-2 p-12   text-center mt-10"
+        className="col-span-2 row-start-2 text-center "
     >
         <Heading
             as="h2"
@@ -153,6 +153,17 @@ const WelcomeEntry = () => (
         >
             Explore the world of Chuy Vera, a dedicated football coach who has inspired countless players and teams throughout his illustrious career. Here, you'll find a showcase of his achievements, philosophy, and the impact he's made on the footballing world. Prepare to be inspired as you delve into the story of a coach whose passion and expertise have transcended borders.
         </Text>
+        <Box as="div" className="absolute inset-x-0 bottom-0">
+            <svg
+                viewBox="0 0 1440 320"
+                className="w-full h-22 fill-current  text-blue-900 opacity-30"
+                preserveAspectRatio="none"
+            >
+                <path
+                    d="M0,256L48,224C96,192,192,128,288,106.7C384,85,480,107,576,122.7C672,139,768,149,864,144C960,139,1056,117,1152,122.7C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+                ></path>
+            </svg>
+        </Box>
     </Flex>
 );
 
@@ -160,30 +171,33 @@ function WelcomeSection() {
     useWaveAnimation();
 
     return (
-        <Grid
-            as="div"
-            columns="1fr 1fr"
-            rows="1fr 1fr"
-            className="relative overflow-hidden h-screen w-full bg-primary "
-        >
-            <Flex
+        <section className="relative overflow-hidden">
+            <Box as="div" className="absolute inset-0 bg-gradient-to-r from-black to-black via-blue-900  opacity-30" />
+            <Grid
                 as="div"
-                justify="start"
-                align="start"
-                className="pt-5 pl-10 z-10 row-span-1"
-                direction="column"
-                gap="4"
+                columns="1fr 1fr"
+                rows="1fr 1fr"
+                className="relative overflow-hidden h-screen w-full"
             >
-                <WelcomeHeading />
-                <Subheading />
-                <Description />
-                <CallToAction />
-            </Flex>
+                <Flex
+                    as="div"
+                    justify="start"
+                    align="start"
+                    className="pt-5 pl-10 z-10 row-span-1"
+                    direction="column"
+                    gap="4"
+                >
+                    <WelcomeHeading />
+                    <Subheading />
+                    <Description />
+                    <CallToAction />
+                </Flex>
 
-            <ImageSection />
-            <WaveBackground />
-            <WelcomeEntry />
-        </Grid>
+                <ImageSection />
+                <WaveBackground />
+                <WelcomeEntry />
+            </Grid>
+        </section>
     );
 }
 

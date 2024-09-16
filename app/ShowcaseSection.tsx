@@ -29,7 +29,7 @@ function ShowcaseSection() {
         <section className="relative overflow-hidden">
             <Grid as="div" columns="1fr 1fr 1fr"  rows="0.3fr 1fr" className='w-full h-full'>
                 {/* Background Gradient */}
-                <Box as="div" className="absolute inset-0 bg-gradient-to-r from-black via-blue-900 to-black opacity-90"></Box>
+                <Box as="div" className="absolute inset-0 bg-gradient-to-r from-black via-blue-900 to-black opacity-50"></Box>
                 <Box as="div" className="absolute inset-x-0 top-0">
                     <svg
                         viewBox="0 0 1440 320"
