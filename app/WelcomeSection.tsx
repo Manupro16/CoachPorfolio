@@ -127,7 +127,7 @@ const WelcomeEntry = () => (
         align="center"
         justify="center"
         direction="column"
-        className="col-span-2 row-start-2 p-12 bg-black/70 rounded-lg text-center mt-10"
+        className="col-span-2 row-start-2 p-12 bg-black/80 rounded-lg text-center mt-10"
     >
         <Heading
             as="h2"
@@ -164,7 +164,7 @@ function WelcomeSection() {
             as="div"
             columns="1fr 1fr"
             rows="1fr 1fr"
-            className="relative overflow-hidden h-screen w-full bg-gradient-to-r from-black via-black/75 to-transparent"
+            className="relative overflow-hidden h-screen w-full bg-gradient-to-r from-black via-black/70 to-transparent"
         >
             <Flex
                 as="div"
