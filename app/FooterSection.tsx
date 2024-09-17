@@ -1,50 +1,56 @@
-import {Box, Flex, Grid, Text, Heading} from "@radix-ui/themes";
+import { Box, Flex, Grid, Text, Heading } from "@radix-ui/themes";
 import Link from "next/link";
-import { InstagramLogoIcon, TwitterLogoIcon, FontFamilyIcon, EnvelopeClosedIcon } from "@radix-ui/react-icons";'@radix-ui/react-icons'
+import { InstagramLogoIcon, TwitterLogoIcon, FontFamilyIcon, EnvelopeClosedIcon } from "@radix-ui/react-icons";
 
-function FooterSection () {
+function FooterSection() {
     return (
-        <footer className=" h-40 bg-gradient-to-r from-gray-900 via-black to-gray-900 border-b border-gray-700 px-10 py-4 shadow-lg">
-            <Grid as="div" columns="1fr 1fr 1fr" rows="1fr" className="h-full w-full" >
-                <Flex as="div" direction="column" gap="2" align="start" justify="start"  >
-                   <Heading>
-                       Chuy Vera
-                   </Heading>
-                    <Text>
+        <footer className="bg-gradient-to-r from-gray-900 via-black to-gray-900 border-t border-gray-700 px-10 py-8 shadow-lg">
+            <Grid as="div" columns="repeat(auto-fit, minmax(240px, 1fr))" gap="6" className="w-full">
+                {/* Brand Information */}
+                <Flex as="div" direction="column" gap="2" align="start">
+                    <Heading size="6" className="text-primary">
+                        Chuy Vera
+                    </Heading>
+                    <Text size="4" className="text-textMuted">
                         Professional Football Coach
                     </Text>
-                    <Text size="3" >© 2024 Chuy Vera. All rights reserved.</Text>
+                    <Text size="3" className="text-gray-500">
+                        © 2024 Chuy Vera. All rights reserved.
+                    </Text>
                 </Flex>
-                <Box as="div">
-                    <Flex as="div" direction="column" gap="2" align="center" justify="start"  >
-                        <Heading>
-                            Social Media
-                        </Heading>
-                    </Flex>
-                    <Flex  as="div" direction="row" gap="5" align="center" justify="center" className="pt-5">
-                        <Link href="/instagram">
-                            <InstagramLogoIcon className="h-6 w-6" />
+
+                {/* Social Media Links */}
+                <Flex as="div" direction="column" gap="2" align="center">
+                    <Heading size="6" className="text-primary">
+                        Social Media
+                    </Heading>
+                    <Flex direction="row" gap="5" className="pt-4">
+                        <Link href="https://instagram.com">
+                            <InstagramLogoIcon className="h-6 w-6 text-primary hover:text-primaryDark" />
                         </Link>
-                        <Link href="/twitter">
-                            <TwitterLogoIcon className="h-6 w-6" />
+                        <Link href="https://twitter.com">
+                            <TwitterLogoIcon className="h-6 w-6 text-primary hover:text-primaryDark" />
                         </Link>
-                        <Link href="/facebook">
-                            <FontFamilyIcon className="h-6 w-6" />
+                        <Link href="https://facebook.com">
+                            <FontFamilyIcon className="h-6 w-6 text-primary hover:text-primaryDark" />
                         </Link>
                     </Flex>
-                </Box>
-                <Box as="div">
-                    <Flex as="div" direction="column" align="center" justify="start"  >
-                        <Heading>
-                            Contact Information
-                        </Heading>
-                    </Flex>
-                    <Flex as="div" direction="row" align="start" justify="start" >
-                        <Text size="3" >
-                            <a href="verajesus15@hotmail.com" className="relative" > <EnvelopeClosedIcon /> verajesus15@hotmail.com</a>
+                </Flex>
+
+                {/* Contact Information */}
+                <Flex as="div" direction="column" align="start">
+                    <Heading size="6" className="text-primary">
+                        Contact Information
+                    </Heading>
+                    <Flex direction="row" align="start" className="pt-4">
+                        <EnvelopeClosedIcon className="mr-2 text-primary" />
+                        <Text size="4" className="text-textMuted">
+                            <a href="mailto:verajesus15@hotmail.com" className="hover:text-primaryDark">
+                                verajesus15@hotmail.com
+                            </a>
                         </Text>
                     </Flex>
-                </Box>
+                </Flex>
             </Grid>
         </footer>
     );
