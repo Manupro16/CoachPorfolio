@@ -5,10 +5,9 @@ import FooterSection from "@/app/FooterSection";
 
 function Home() {
     return (
-        <Grid as='div' columns='1' rows='1fr 1fr '>
+        <Grid as='div' columns='1' rows='1fr 1fr'>
             <WelcomeSection />
             <ShowcaseSection />
-            <FooterSection />
         </Grid>
     );
 }

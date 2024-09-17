@@ -4,6 +4,7 @@ import "./globals.css";
 import '@radix-ui/themes/styles.css';
 import { Theme } from '@radix-ui/themes';
 import NavBar from "@/app/NavBar";
+import FooterSection from "@/app/FooterSection";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,6 +32,7 @@ export default function RootLayout({children,}: Readonly<{ children: React.React
             <main>
                 {children}
             </main>
+            <FooterSection />
         </Theme>
       </body>
     </html>
