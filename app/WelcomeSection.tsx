@@ -7,21 +7,6 @@ import { gsap } from 'gsap';
 import { Box, Flex, Grid, Heading, Text, Button } from '@radix-ui/themes';
 import Image from 'next/image';
 
-// GSAP Animation
-const useWaveAnimation = () => {
-    useEffect(() => {
-        gsap.to('#wavePath', {
-            duration: 10,
-            attr: {
-                d: 'M0,144L48,154.7C96,165,192,187,288,197.3C384,208,480,208,576,192C672,176,768,144,864,128C960,112,1056,112,1152,144C1248,176,1344,240,1392,272L1440,304L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z',
-            },
-            repeat: -1,
-            yoyo: true,
-            ease: 'power1.inOut',
-        });
-    }, []);
-};
-
 const WelcomeHeading = () => (
     <Heading
         as="h1"
@@ -107,7 +92,7 @@ const WaveBackground = () => (
             preserveAspectRatio="none"
         >
             <path
-                id="wavePath"
+                id="wavePathTop"
                 d="M0,128L48,138.7C96,149,192,171,288,181.3C384,192,480,192,576,176C672,160,768,128,864,112C960,96,1056,96,1152,128C1248,160,1344,224,1392,256L1440,288L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
             />
         </svg>
@@ -153,6 +138,7 @@ const WelcomeEntry = () => (
                 preserveAspectRatio="none"
             >
                 <path
+                    id="wavePathBottom"
                     d="M0,256L48,224C96,192,192,128,288,106.7C384,85,480,107,576,122.7C672,139,768,149,864,144C960,139,1056,117,1152,122.7C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
                 ></path>
             </svg>
@@ -161,7 +147,32 @@ const WelcomeEntry = () => (
 );
 
 function WelcomeSection() {
-    useWaveAnimation();
+    useEffect(() => {
+        const topWaveAnimation = gsap.to('#wavePathTop', {
+            duration: 10,
+            attr: {
+                d: 'M0,144L48,154.7C96,165,192,187,288,197.3C384,208,480,208,576,192C672,176,768,144,864,128C960,112,1056,112,1152,144C1248,176,1344,240,1392,272L1440,304L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z',
+            },
+            repeat: -1,
+            yoyo: true,
+            ease: 'power1.inOut',
+        });
+
+        const bottomWaveAnimation = gsap.to('#wavePathBottom', {
+            duration: 10,
+            attr: {
+                d: 'M0,224L48,192C96,160,192,96,288,85.3C384,75,480,117,576,138.7C672,160,768,160,864,149.3C960,139,1056,117,1152,117.3C1248,117,1344,139,1392,149.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z',
+            },
+            repeat: -1,
+            yoyo: true,
+            ease: 'power1.inOut',
+        });
+
+        return () => {
+            topWaveAnimation.kill();
+            bottomWaveAnimation.kill();
+        }
+    }, []);
 
     return (
         <section className="relative overflow-hidden">
