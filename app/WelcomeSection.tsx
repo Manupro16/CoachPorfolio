@@ -2,10 +2,9 @@
 
 'use client';
 
-import React, { useEffect } from 'react';
-import { gsap } from 'gsap';
 import { Box, Flex, Grid, Heading, Text, Button } from '@radix-ui/themes';
 import Image from 'next/image';
+import useGsapWaveAnimation from "@/hooks/useGsapWaveAnimation";
 
 const WelcomeHeading = () => (
     <Heading
@@ -147,32 +146,22 @@ const WelcomeEntry = () => (
 );
 
 function WelcomeSection() {
-    useEffect(() => {
-        const topWaveAnimation = gsap.to('#wavePathTop', {
-            duration: 10,
-            attr: {
-                d: 'M0,144L48,154.7C96,165,192,187,288,197.3C384,208,480,208,576,192C672,176,768,144,864,128C960,112,1056,112,1152,144C1248,176,1344,240,1392,272L1440,304L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z',
-            },
-            repeat: -1,
-            yoyo: true,
-            ease: 'power1.inOut',
-        });
 
-        const bottomWaveAnimation = gsap.to('#wavePathBottom', {
+    // Define the animations
+    const animations = [
+        {
+            targetId: 'wavePathTop',
             duration: 10,
-            attr: {
-                d: 'M0,224L48,192C96,160,192,96,288,85.3C384,75,480,117,576,138.7C672,160,768,160,864,149.3C960,139,1056,117,1152,117.3C1248,117,1344,139,1392,149.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z',
-            },
-            repeat: -1,
-            yoyo: true,
-            ease: 'power1.inOut',
-        });
-
-        return () => {
-            topWaveAnimation.kill();
-            bottomWaveAnimation.kill();
+            svgPath: 'M0,144L48,154.7C96,165,192,187,288,197.3C384,208,480,208,576,192C672,176,768,144,864,128C960,112,1056,112,1152,144C1248,176,1344,240,1392,272L1440,304L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z'
+        },
+        {
+            targetId: 'wavePathBottom',
+            duration: 10,
+            svgPath: 'M0,224L48,192C96,160,192,96,288,85.3C384,75,480,117,576,138.7C672,160,768,160,864,149.3C960,139,1056,117,1152,117.3C1248,117,1344,139,1392,149.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'
         }
-    }, []);
+    ];
+
+    useGsapWaveAnimation(animations);
 
     return (
         <section className="relative overflow-hidden">
