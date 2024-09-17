@@ -1,4 +1,4 @@
-import { Box, Flex, Grid, Text, Heading } from "@radix-ui/themes";
+import {  Flex, Grid, Text, Heading } from "@radix-ui/themes";
 import Link from "next/link";
 import { InstagramLogoIcon, TwitterLogoIcon, FontFamilyIcon, EnvelopeClosedIcon } from "@radix-ui/react-icons";
 
@@ -38,11 +38,11 @@ function FooterSection() {
                 </Flex>
 
                 {/* Contact Information */}
-                <Flex as="div" direction="column" align="start">
+                <Flex as="div" direction="column" align="center">
                     <Heading size="6" className="text-primary">
                         Contact Information
                     </Heading>
-                    <Flex direction="row" align="start" className="pt-4">
+                    <Flex direction="row" align="center" className="pt-4">
                         <EnvelopeClosedIcon className="mr-2 text-primary" />
                         <Text size="4" className="text-textMuted">
                             <a href="mailto:verajesus15@hotmail.com" className="hover:text-primaryDark">
