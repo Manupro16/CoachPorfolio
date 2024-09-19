@@ -1,7 +1,6 @@
 import WelcomeSection from "@/app/WelcomeSection";
 import {Grid} from "@radix-ui/themes";
 import ShowcaseSection from "@/app/ShowcaseSection";
-import FooterSection from "@/app/FooterSection";
 
 function Home() {
     return (
