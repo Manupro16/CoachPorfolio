@@ -1,31 +1,30 @@
-// hooks/useGsapWaveAnimation.ts
-import { useEffect } from 'react';
+// useGsapWaveAnimation.ts
+
+import { useLayoutEffect } from 'react';
 import { gsap } from 'gsap';
 
-interface AnimationProps {
+interface WaveAnimation {
     targetId: string;
     duration: number;
-    svgPath: string;
+    repeat?: number;
+    paths: string[];
 }
 
-const useGsapWaveAnimation = (animations: AnimationProps[]): void => {
-    useEffect(() => {
-        const gsapAnimations = animations.map(animation =>
-            gsap.to(`#${animation.targetId}`, {
-                duration: animation.duration,
-                attr: {
-                    d: animation.svgPath,
-                },
-                repeat: -1,
-                yoyo: true,
-                ease: 'power1.inOut',
-            })
-        );
+const useGsapWaveAnimation = (animations: WaveAnimation[]) => {
+    useLayoutEffect(() => {
+        animations.forEach(({ targetId, duration, repeat = -1, paths }) => {
+            const segmentDuration = duration / (paths.length - 1);
+            const tl = gsap.timeline({ repeat, defaults: { ease: 'sine.inOut' } });
 
-        // Cleanup animations on component unmount
-        return () => {
-            gsapAnimations.forEach(gsapAnimation => gsapAnimation.kill());
-        };
+            paths.forEach((path, index) => {
+                if (index > 0) {
+                    tl.to(`#${targetId}`, {
+                        duration: segmentDuration,
+                        attr: { d: path },
+                    });
+                }
+            });
+        });
     }, [animations]);
 };
 

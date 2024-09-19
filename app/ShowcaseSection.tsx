@@ -1,8 +1,13 @@
-import { Box, Flex, Grid, Heading, Text } from "@radix-ui/themes";
-import VideoCard from "@/components/VideoCard";
+// ShowcaseSection.tsx
+
+'use client';
+
+import React from 'react';
+import { Box, Flex, Grid, Heading, Text } from '@radix-ui/themes';
+import VideoCard from '@/components/VideoCard';
+import useGsapWaveAnimation from '../hooks/useGsapWaveAnimation'; // Import the custom hook
 
 function ShowcaseSection() {
-
     const showcases = [
         {
             team: 'Zamora FC Venezuela',
@@ -24,28 +29,70 @@ function ShowcaseSection() {
         },
     ];
 
+    // Define the animations
+    const animations = [
+        {
+            targetId: 'showcaseWavePathTop',
+            duration: 30, // Total duration for the entire animation cycle
+            repeat: -1,
+            paths: [
+                // Path 1 (Original)
+                'M0,192 C144,160,288,128,432,133.3 C576,138.7,720,170.7 864,165.3 C1008,160,1152,117,1296,101.3 C1440,85.3,1584,96,1728,106.7 L1728,0 L0,0 Z',
+                // Path 2
+                'M0,224 C144,192,288,160,432,149.3 C576,138.7,720,138.7 864,154.7 C1008,170.7,1152,202.7,1296,202.7 C1440,202.7,1584,170.7,1728,160 L1728,0 L0,0 Z',
+                // Path 3 (Same as Path 1)
+                'M0,192 C144,160,288,128,432,133.3 C576,138.7,720,170.7 864,165.3 C1008,160,1152,117,1296,101.3 C1440,85.3,1584,96,1728,106.7 L1728,0 L0,0 Z',
+            ],
+        },
+        {
+            targetId: 'showcaseWavePathBottom',
+            duration: 30, // Total duration for the entire animation cycle
+            repeat: -1,
+            paths: [
+                // Path 1 (Original)
+                'M0,192 C144,160,288,128,432,133.3 C576,138.7,720,170.7 864,165.3 C1008,160,1152,117,1296,101.3 C1440,85.3,1584,96,1728,106.7 L1728,320 L0,320 Z',
+                // Path 2
+                'M0,256 C144,224,288,192,432,181.3 C576,170.7,720,170.7 864,186.7 C1008,202.7,1152,234.7,1296,234.7 C1440,234.7,1584,202.7,1728,192 L1728,320 L0,320 Z',
+                // Path 3 (Same as Path 1)
+                'M0,192 C144,160,288,128,432,133.3 C576,138.7,720,170.7 864,165.3 C1008,160,1152,117,1296,101.3 C1440,85.3,1584,96,1728,106.7 L1728,320 L0,320 Z',
+            ],
+        },
+    ];
+
+    useGsapWaveAnimation(animations);
+
     return (
         <section className="relative overflow-hidden">
             {/* Background Gradient */}
-            <Box as="div" className="absolute inset-0 bg-gradient-to-r from-black via-primaryDark to-black opacity-30"></Box>
+            <Box
+                as="div"
+                className="absolute inset-0 bg-gradient-to-r from-black via-primaryDark to-black opacity-30"
+            ></Box>
 
             {/* Top SVG Wave */}
-            <Box as="div" className="absolute inset-x-0 top-0 fill-current text-primaryDark opacity-30">
+            <Box
+                as="div"
+                className="absolute inset-x-0 top-0 w-full h-[40%] pointer-events-none z-0 overflow-hidden"
+            >
                 <svg
-                    viewBox="0 0 1440 320"
-                    className="w-full h-32 sm:h-48 md:h-64 lg:h-80"
+                    viewBox="0 0 1728 320"
+                    className="w-full h-full fill-current text-primaryDark opacity-30"
                     preserveAspectRatio="none"
                 >
                     <path
-                        fill="var(--color-primary-dark)"
-                        fillOpacity="1"
-                        d="M0,160L48,170.7C96,181,192,203,288,218.7C384,235,480,245,576,240C672,235,768,213,864,208C960,203,1056,213,1152,224C1248,235,1344,245,1392,250.7L1440,256L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+                        id="showcaseWavePathTop" // Add ID for GSAP animation
+                        d="M0,192 C144,160,288,128,432,133.3 C576,138.7,720,170.7 864,165.3 C1008,160,1152,117,1296,101.3 C1440,85.3,1584,96,1728,106.7 L1728,0 L0,0 Z"
                     ></path>
                 </svg>
             </Box>
 
             {/* Content */}
-            <Flex as="div" direction="column" align="center" className="text-center relative z-10 py-16 px-4 sm:px-6 lg:px-8 col-span-3">
+            <Flex
+                as="div"
+                direction="column"
+                align="center"
+                className="text-center relative z-10 py-16 px-4 sm:px-6 lg:px-8 col-span-3"
+            >
                 <Heading size="8" className="text-textLight mb-4">
                     No Matter Where He Goes, His Philosophies and Style Remain the Same
                 </Heading>
@@ -55,9 +102,14 @@ function ShowcaseSection() {
             </Flex>
 
             {/* Video Cards */}
-            <Flex as="div" className="col-span-3 z-10 py-16 px-4 sm:px-6 lg:px-8" align="start" justify="center">
+            <Flex
+                as="div"
+                className="col-span-3 z-10 py-16 px-4 sm:px-6 lg:px-8"
+                align="start"
+                justify="center"
+            >
                 <Grid
-                    columns={{ initial: "1", sm: "1", md: "2", lg: "3" }}
+                    columns={{ initial: '1', sm: '1', md: '2', lg: '3' }}
                     gap="6"
                     className="mt-12"
                 >
@@ -68,15 +120,18 @@ function ShowcaseSection() {
             </Flex>
 
             {/* Bottom SVG Wave */}
-            <Box as="div" className="absolute inset-x-0 bottom-0">
+            <Box
+                as="div"
+                className="absolute inset-x-0 bottom-0 w-full h-[30%] pointer-events-none z-0 overflow-hidden"
+            >
                 <svg
-                    viewBox="0 0 1440 320"
-                    className="w-full h-32 sm:h-48 md:h-64 lg:h-80 fill-current text-primaryDark opacity-30 "
+                    viewBox="0 0 1728 320"
+                    className="w-full h-full fill-current text-primaryDark opacity-30"
                     preserveAspectRatio="none"
                 >
                     <path
-                        fillOpacity="1"
-                        d="M0,256L48,224C96,192,192,128,288,106.7C384,85,480,107,576,122.7C672,139,768,149,864,144C960,139,1056,117,1152,122.7C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+                        id="showcaseWavePathBottom" // Add ID for GSAP animation
+                        d="M0,192 C144,160,288,128,432,133.3 C576,138.7,720,170.7 864,165.3 C1008,160,1152,117,1296,101.3 C1440,85.3,1584,96,1728,106.7 L1728,320 L0,320 Z"
                     ></path>
                 </svg>
             </Box>
@@ -85,9 +140,3 @@ function ShowcaseSection() {
 }
 
 export default ShowcaseSection;
-
-
-
-
-
-
