@@ -3,9 +3,10 @@
 'use client';
 
 import React from 'react';
-import { Box, Flex, Grid, Heading, Text } from '@radix-ui/themes';
+import {Box, Button, Flex, Grid, Heading, Text} from '@radix-ui/themes';
 import VideoCard from '@/components/VideoCard';
-import useGsapWaveAnimation from '../hooks/useGsapWaveAnimation'; // Import the custom hook
+import useGsapWaveAnimation from '../hooks/useGsapWaveAnimation';
+import Link from "next/link"; // Import the custom hook
 
 function ShowcaseSection() {
     const showcases = [
@@ -66,8 +67,8 @@ function ShowcaseSection() {
             {/* Background Gradient */}
             <Box
                 as="div"
-                className="absolute inset-0 bg-gradient-to-r from-black via-primaryDark to-black opacity-30"
-            ></Box>
+                className="absolute inset-0 bg-gradient-to-r from-black via-primaryDark to-black opacity-30 pointer-events-none z-0"
+            />
 
             {/* Top SVG Wave */}
             <Box
@@ -86,38 +87,59 @@ function ShowcaseSection() {
                 </svg>
             </Box>
 
-            {/* Content */}
-            <Flex
+            {/* Main Content Grid */}
+            <Grid
                 as="div"
-                direction="column"
-                align="center"
-                className="text-center relative z-10 py-16 px-4 sm:px-6 lg:px-8 col-span-3"
+                className="relative z-10 h-screen w-full grid grid-rows-[auto, 1fr, auto] items-center justify-center"
+                columns="1fr 1fr"
             >
-                <Heading size="8" className="text-textLight mb-4">
-                    No Matter Where He Goes, His Philosophies and Style Remain the Same
-                </Heading>
-                <Text size="4" className="text-textMuted max-w-2xl">
-                    An introduction to the history of Chuy Vera's amazing soccer career. This showcase provides you with clips of his teams in each season and his impact on the club.
-                </Text>
-            </Flex>
-
-            {/* Video Cards */}
-            <Flex
-                as="div"
-                className="col-span-3 z-10 py-16 px-4 sm:px-6 lg:px-8"
-                align="start"
-                justify="center"
-            >
-                <Grid
-                    columns={{ initial: '1', sm: '1', md: '2', lg: '3' }}
-                    gap="6"
-                    className="mt-12"
+                {/* Header Section */}
+                <Flex
+                    as="div"
+                    direction="column"
+                    align="center"
+                    className="text-center py-8 px-4 sm:px-6 lg:px-8 col-span-2"
                 >
-                    {showcases.map((item, index) => (
-                        <VideoCard key={index} {...item} />
-                    ))}
-                </Grid>
-            </Flex>
+                    <Heading size="8" className="text-textLight mb-4">
+                        No Matter Where He Goes, His Philosophies and Style Remain the Same
+                    </Heading>
+                    <Text size="4" className="text-textMuted max-w-2xl">
+                        An introduction to the history of Chuy Vera's amazing soccer career. This showcase provides you with clips of his teams in each season and his impact on the club.
+                    </Text>
+                </Flex>
+
+                {/* Video Cards Section */}
+                <Flex
+                    as="div"
+                    className="col-span-2 z-10 py-8 px-4 sm:px-6 lg:px-8"
+                    align="center"
+                    justify="center"
+                >
+                    <Grid
+                        columns={{ initial: '1', sm: '1', md: '2', lg: '3' }}
+                        gap="6"
+                        className="w-full"
+                    >
+                        {showcases.map((item, index) => (
+                            <VideoCard key={index} {...item} />
+                        ))}
+                    </Grid>
+                </Flex>
+
+                {/* Button Section */}
+                <Flex
+                    as="div"
+                    justify="center"
+                    align="start"
+                    className="col-span-2 z-10 py-4"
+                >
+                    <Link href="/teams">
+                        <Button className="px-6 py-3 bg-primary text-white rounded-lg shadow-lg hover:bg-primaryDark transition-colors">
+                            Explore More
+                        </Button>
+                    </Link>
+                </Flex>
+            </Grid>
 
             {/* Bottom SVG Wave */}
             <Box

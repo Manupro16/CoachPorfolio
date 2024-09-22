@@ -3,6 +3,7 @@
 import { Box, Flex, Grid, Heading, Text, Button } from '@radix-ui/themes';
 import Image from 'next/image';
 import useGsapWaveAnimation from '@/hooks/useGsapWaveAnimation';
+import Link from 'next/link';
 
 const WelcomeHeading = () => (
     <Heading
@@ -40,11 +41,13 @@ const Description = () => (
 );
 
 const CallToAction = () => (
-    <Button
-        className="mt-4 px-4 py-2 bg-primary text-white rounded-lg shadow-lg hover:bg-primaryDark transition-colors"
-    >
-        Explore More
-    </Button>
+    <Link href="/teams">
+        <Button
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg shadow-lg hover:bg-primaryDark transition-colors"
+        >
+            Explore More
+        </Button>
+    </Link>
 );
 
 const ImageSection = () => (
