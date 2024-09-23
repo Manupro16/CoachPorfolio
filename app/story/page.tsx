@@ -1,4 +1,16 @@
-import {AspectRatio, Badge, Box, Code, DataList, Flex, Grid, Heading, IconButton, Link, Text} from "@radix-ui/themes";
+// components/StoryPage.tsx
+
+import React from 'react';
+import {
+    AspectRatio,
+    Badge,
+    Box,
+    DataList,
+    Flex,
+    Grid,
+    Heading,
+    Text,
+} from '@radix-ui/themes';
 
 function StoryPage() {
 
