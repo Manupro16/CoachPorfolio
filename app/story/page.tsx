@@ -3,7 +3,8 @@ import {AspectRatio, Badge, Box, Code, DataList, Flex, Grid, Heading, IconButton
 function StoryPage() {
 
     return (
-      <section title="story" className="w-screen h-screen">
+
+      <section title="story" className="w-screen h-auto relative">
           {/* Background Gradient */}
           <Box
               as="div"
