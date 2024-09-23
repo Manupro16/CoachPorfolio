@@ -58,7 +58,7 @@ declare module 'react-slick' {
         variableWidth?: boolean;
         vertical?: boolean;
         waitForAnimate?: boolean;
-        [key: string]: any;
+        [key: string]: never;
     }
 
     export default class Slider extends React.Component<Settings> {}
