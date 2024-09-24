@@ -110,48 +110,48 @@ function StoryPage() {
                     </Box>
             </Box>
 
-                {playingTeams.map((team, index) => (
-                    <Box key={index} className="mb-12">
-                        {/* Team Section */}
-                        <Grid
-                            columns={{ initial: '1fr', md: '1fr 1fr' }}
-                            gap="8"
-                            className="items-center"
-                        >
-                            <AspectRatio ratio={16 / 9}>
-                                <Image
-                                    src={team.image}
-                                    alt={team.name}
-                                    layout="fill"
-                                    objectFit="cover"
-                                    className="rounded-lg"
-                                />
-                            </AspectRatio>
-                            <Box>
-                                <Flex align="center" gap="2">
-                                    <Heading
-                                        as="h3"
-                                        size="5"
-                                        className="text-primary"
-                                    >
-                                        {team.name}
-                                    </Heading>
-                                    <Badge color="blue">{team.dates}</Badge>
-                                </Flex>
-                                <Text
-                                    as="p"
-                                    size="3"
-                                    className="text-gray-300 leading-relaxed mt-2"
-                                >
-                                    {/* Placeholder text */}
-                                    Lorem ipsum
-                                </Text>
-                            </Box>
-                        </Grid>
-                        {/*<Separator my="3" size="4" color="blue" />*/}
-                        <Box as="span" className="block h-[3px] w-full bg-primary mt-6" />
-                    </Box>
-                ))}
+                {/*{playingTeams.map((team, index) => (*/}
+                {/*    <Box key={index} className="mb-12">*/}
+                {/*        /!* Team Section *!/*/}
+                {/*        <Grid*/}
+                {/*            columns={{ initial: '1fr', md: '1fr 1fr' }}*/}
+                {/*            gap="8"*/}
+                {/*            className="items-center"*/}
+                {/*        >*/}
+                {/*            <AspectRatio ratio={16 / 9}>*/}
+                {/*                <Image*/}
+                {/*                    src={team.image}*/}
+                {/*                    alt={team.name}*/}
+                {/*                    layout="fill"*/}
+                {/*                    objectFit="cover"*/}
+                {/*                    className="rounded-lg"*/}
+                {/*                />*/}
+                {/*            </AspectRatio>*/}
+                {/*            <Box>*/}
+                {/*                <Flex align="center" gap="2">*/}
+                {/*                    <Heading*/}
+                {/*                        as="h3"*/}
+                {/*                        size="5"*/}
+                {/*                        className="text-primary"*/}
+                {/*                    >*/}
+                {/*                        {team.name}*/}
+                {/*                    </Heading>*/}
+                {/*                    <Badge color="blue">{team.dates}</Badge>*/}
+                {/*                </Flex>*/}
+                {/*                <Text*/}
+                {/*                    as="p"*/}
+                {/*                    size="3"*/}
+                {/*                    className="text-gray-300 leading-relaxed mt-2"*/}
+                {/*                >*/}
+                {/*                    /!* Placeholder text *!/*/}
+                {/*                    Lorem ipsum*/}
+                {/*                </Text>*/}
+                {/*            </Box>*/}
+                {/*        </Grid>*/}
+                {/*        /!*<Separator my="3" size="4" color="blue" />*!/*/}
+                {/*        <Box as="span" className="block h-[3px] w-full bg-primary mt-6" />*/}
+                {/*    </Box>*/}
+                {/*))}*/}
 
 
 
