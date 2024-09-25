@@ -8,11 +8,11 @@ import {
     Flex,
     Grid,
     Heading,
-    Quote,
     Text,
 } from '@radix-ui/themes';
 import Image from 'next/image';
 import IntroductionSection from "@/app/story/IntroductionSection";
+import EarlyLifeSection from "@/app/story/EarlyLifeSection";
 
 function StoryPage() {
     // Teams he played for
@@ -45,11 +45,7 @@ Lacinia arcu facilisi phasellus viverra litora varius malesuada. Avehicula vitae
 Aliquet inceptos convallis nec vitae accumsan eros venenatis viverra. Integer montes facilisi sagittis taciti habitant. Interdum risus aptent proin porttitor taciti. Himenaeos id eget consequat malesuada ridiculus tincidunt convallis magna. Ullamcorper inceptos purus conubia euismod vehicula. Arcu ut taciti venenatis imperdiet conubia mus ligula. Pretium nunc dictum leo ullamcorper adipiscing suscipit.
 
 Duis facilisis tincidunt facilisis rhoncus proin. Eros odio egestas congue, tortor sed feugiat. Feugiat libero convallis vel orci egestas accumsan sit. Congue egestas ornare facilisi commodo fermentum varius quam. Porta metus laoreet interdum ultrices maecenas tempus nunc pretium. Himenaeos phasellus habitant interdum urna blandit sociosqu praesent integer. Nec lobortis finibus arcu proin semper congue tempus dictum urna? Vulputate ipsum lobortis platea iaculis volutpat cursus mi a. Ex finibus lorem phasellus sociosqu ultrices.`; // Replace with your actual content
-    const textThreshold = 1650; // Number of characters before splitting
-    const isTextLong = fullText.length > textThreshold;
 
-    const firstPart = isTextLong ? fullText.substring(0, textThreshold) : fullText;
-    const secondPart = isTextLong ? fullText.substring(textThreshold) : '';
 
     return (
         <section title="story" className="w-screen h-auto relative">
@@ -63,56 +59,7 @@ Duis facilisis tincidunt facilisis rhoncus proin. Eros odio egestas congue, tort
             <Box className="relative z-10 px-4 sm:px-6 lg:px-8 py-5">
                 <IntroductionSection playerStatus="Retired" coachStatus="Active" />
 
-                {/* Early Life */}
-                <Box className="relative w-full mb-16 pt-10 px-4 sm:px-6 lg:px-8">
-                    <Grid
-                        columns={{ initial: '1fr', md: '1fr 1fr' }}
-                        gapX="5"
-                        gapY="3"
-                        align="start"
-                    >
-                        {/* Image Section */}
-                        <Box>
-                            <AspectRatio ratio={4 / 3}>
-                                <Image
-                                    src="https://images.unsplash.com/photo-1479030160180-b1860951d696?&auto=format&fit=crop&w=1200&q=80"
-                                    alt="Jose de Jesus Vera in his early years"
-                                    title="Jose de Jesus Vera in his early years"
-                                    layout="fill"
-                                    objectFit="cover"
-                                    className="rounded-lg"
-                                />
-                            </AspectRatio>
-                        </Box>
-
-                        {/* Text Section */}
-                        <Flex
-                            direction="column"
-                            align={{ initial: 'center', md: 'start' }}
-                            className="text-center md:text-left"
-                        >
-                            <Heading as="h2" size="7" className="font-bold text-primary">
-                                Early Life
-                            </Heading>
-                            <Box as="span" className="block h-[3px] w-1/2 bg-primary mt-2 mb-4" />
-                            <Text
-                                as="p"
-                                size="3"
-                                className="text-gray-300 leading-relaxed max-w-prose"
-                            >
-                                {firstPart}
-                            </Text>
-                        </Flex>
-                        {/* Overflow Text Section */}
-                        {isTextLong && (
-                            <Box className="col-span-2">
-                                <Text as="p" size="3" className="text-gray-300 leading-relaxed">
-                                    {secondPart}
-                                </Text>
-                            </Box>
-                        )}
-                    </Grid>
-                </Box>
+                <EarlyLifeSection imageSrc="https://images.unsplash.com/photo-1479030160180-b1860951d696?&auto=format&fit=crop&w=1200&q=80" imageAlt="Early Life" title="Early Life" content={fullText}  />
 
                 {/* Playing Career */}
                 <Box className="mb-16">
