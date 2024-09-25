@@ -1,16 +1,7 @@
 // components/StoryPage.tsx
 
 import React from 'react';
-import {
-    AspectRatio,
-    Badge,
-    Box,
-    Flex,
-    Grid,
-    Heading,
-    Text,
-} from '@radix-ui/themes';
-import Image from 'next/image';
+import {Box,} from '@radix-ui/themes';
 import IntroductionSection from "@/app/story/IntroductionSection";
 import EarlyLifeSection from "@/app/story/EarlyLifeSection";
 import CareerSection from "@/app/story/CareerSection";
@@ -19,7 +10,15 @@ import ClosingSection from "@/app/story/ClosingSection";
 function StoryPage() {
     // Teams he played for
     const playingTeams = [
-        { name: 'Estudiantes de Merida', image: 'https://images.unsplash.com/photo-1479030160180-b1860951d696?&auto=format&fit=crop&w=1200&q=80', dates: '1985 - 1988', description: 'Deportivo Estudiantes de Merida (DEM)' },
+        { name: 'Estudiantes de Merida', image: 'https://images.unsplash.com/photo-1479030160180-b1860951d696?&auto=format&fit=crop&w=1200&q=80', dates: '1985 - 1988', description: 'Lorem ipsum odor amet, consectetuer adipiscing elit. Vivamus cursus maecenas dui elit rhoncus aenean. Integer pellentesque auctor facilisis; nibh vivamus montes. Finibus inceptos magnis suscipit ipsum ut condimentum id eget. Ut senectus porta id et bibendum. Ante senectus nunc egestas sollicitudin inceptos condimentum tempus. Torquent nisl potenti aptent dapibus aliquet metus dictum. Est lacinia pellentesque mauris; blandit maximus inceptos. Justo ornare sem facilisis, sed tristique volutpat. Fringilla tempus mus consequat lorem potenti nisi.\n' +
+                '\n' +
+                'Quisque gravida ut tincidunt odio pulvinar congue nunc. Aptent etiam sit urna fames consectetur mollis. Litora fames turpis tincidunt mus sapien. Natoque sociosqu fringilla tempus vehicula molestie. Habitasse scelerisque consequat sodales neque efficitur rhoncus. Ut egestas tellus nec feugiat commodo cras dui eu. Gravida phasellus suspendisse; parturient fermentum ut nostra leo. Vitae magnis eleifend in sagittis bibendum ullamcorper sollicitudin. Cursus tempor tincidunt lacus ante vulputate, posuere dignissim torquent. Proin class turpis montes dictum inceptos netus ex.\n' +
+                '\n' +
+                'Lacinia arcu facilisi phasellus viverra litora varius malesuada. Avehicula vitae curae lacus hendrerit. Arcu sem interdum venenatis odio integer fames ipsum consectetur suscipit. Eu laoreet nec rutrum ex, fringilla torquent. Congue molestie libero inceptos mattis sagittis. Libero ornare interdum integer taciti torquent duis convallis ante. Etiam lectus sodales platea eros purus convallis penatibus.\n' +
+                '\n' +
+                'Aliquet inceptos convallis nec vitae accumsan eros venenatis viverra. Integer montes facilisi sagittis taciti habitant. Interdum risus aptent proin porttitor taciti. Himenaeos id eget consequat malesuada ridiculus tincidunt convallis magna. Ullamcorper inceptos purus conubia euismod vehicula. Arcu ut taciti venenatis imperdiet conubia mus ligula. Pretium nunc dictum leo ullamcorper adipiscing suscipit.\n' +
+                '\n' +
+                'Duis facilisis tincidunt facilisis rhoncus proin. Eros odio egestas congue, tortor sed feugiat. Feugiat libero convallis vel orci egestas accumsan sit. Congue egestas ornare facilisi commodo fermentum varius quam. Porta metus laoreet interdum ultrices maecenas tempus nunc pretium. Himenaeos phasellus habitant interdum urna blandit sociosqu praesent integer. Nec lobortis finibus arcu proin semper congue tempus dictum urna? Vulputate ipsum lobortis platea iaculis volutpat cursus mi a. Ex finibus lorem phasellus sociosqu ultrices.' },
         { name: 'Marítimo SC', image: 'https://images.unsplash.com/photo-1479030160180-b1860951d696?&auto=format&fit=crop&w=1200&q=80', dates: '1988 - 1990', description: 'Marítimo SC' },
         // { name: 'Universidad de los Andes (ULA)', image: 'https://images.unsplash.com/photo-1479030160180-b1860951d696?&auto=format&fit=crop&w=1200&q=80', dates: '1990 - 1992' },
         // { name: 'Deportivo Tachira', image: 'https://images.unsplash.com/photo-1479030160180-b1860951d696?&auto=format&fit=crop&w=1200&q=80', dates: '1992 - 1995' },

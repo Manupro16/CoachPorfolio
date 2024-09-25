@@ -22,10 +22,31 @@ interface TeamSectionProps {
 }
 
 const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
+    // Define the character limit for the description
+    const textThreshold = 1800; // Adjust as needed
+
+    // Check if the description is longer than the threshold
+    const isTextLong = team.description.length > textThreshold;
+
+    // Function to split text at the nearest word boundary
+    function splitTextAtWord(text: string, limit: number): [string, string] {
+        if (text.length <= limit) return [text, ''];
+        const index = text.lastIndexOf(' ', limit);
+        if (index === -1) return [text, '']; // No space found, don't split
+        return [text.substring(0, index), text.substring(index + 1)];
+    }
+
+    // Use the function to get better splits
+    const [firstPartAdjusted, secondPartAdjusted] = splitTextAtWord(
+        team.description,
+        textThreshold
+    );
+
     return (
         <Grid
             columns={{ initial: '1fr', md: '1fr 1fr' }}
-            gap="8"
+            gapX="5"
+            gapY="3"
             align="start"
             className="mb-12"
         >
@@ -35,16 +56,19 @@ const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
                     ratio={16 / 9}
                     className="transform transition-transform duration-200 hover:scale-105"
                 >
-                    <Image
-                        src={team.image}
-                        alt={team.name}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-lg"
-                        priority
-                    />
+                    <Box className="relative w-full h-full">
+                        <Image
+                            src={team.image}
+                            alt={team.name}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-lg"
+                            priority
+                        />
+                    </Box>
                 </AspectRatio>
             </Box>
+
             {/* Text Section */}
             <Box>
                 <Flex direction="column" gap="2">
@@ -59,12 +83,26 @@ const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
                         size="3"
                         className="text-gray-300 leading-relaxed"
                     >
-                        {team.description}
+                        {firstPartAdjusted}
                     </Text>
                 </Flex>
             </Box>
+
+            {/* Overflow Text Section */}
+            {isTextLong && secondPartAdjusted && (
+                <Box className="md:col-span-2">
+                    <Text
+                        as="p"
+                        size="3"
+                        className="text-gray-300 leading-relaxed mt-4"
+                    >
+                        {secondPartAdjusted}
+                    </Text>
+                </Box>
+            )}
         </Grid>
     );
 };
 
 export default TeamSection;
+
