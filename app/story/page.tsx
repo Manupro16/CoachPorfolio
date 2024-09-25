@@ -14,6 +14,7 @@ import Image from 'next/image';
 import IntroductionSection from "@/app/story/IntroductionSection";
 import EarlyLifeSection from "@/app/story/EarlyLifeSection";
 import CareerSection from "@/app/story/CareerSection";
+import ClosingSection from "@/app/story/ClosingSection";
 
 function StoryPage() {
     // Teams he played for
@@ -80,17 +81,9 @@ Duis facilisis tincidunt facilisis rhoncus proin. Eros odio egestas congue, tort
                 />
 
                 {/* Closing Section */}
-                <Flex justify="center" className="mt-8">
-                    <Text
-                        as="p"
-                        size="3"
-                        className="text-gray-300 leading-relaxed max-w-xl text-center"
-                    >
-                        Coach Chuy Vera's dedication to soccer has left an indelible mark on
-                        the sport. His journey continues to inspire players and coaches
-                        around the world.
-                    </Text>
-                </Flex>
+                <ClosingSection
+                    text="Coach Chuy Vera's dedication to soccer has left an indelible mark on the sport. His journey continues to inspire players and coaches around the world."
+                />
             </Box>
         </section>
     );
