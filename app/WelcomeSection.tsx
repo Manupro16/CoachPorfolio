@@ -203,6 +203,7 @@ function WelcomeSection() {
                 rows="1fr 1fr"
                 className="relative overflow-hidden h-screen w-full"
             >
+
                 <Flex
                     as="div"
                     justify="start"

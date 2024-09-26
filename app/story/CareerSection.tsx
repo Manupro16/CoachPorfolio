@@ -32,7 +32,7 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                                                          teams,
                                                      }) => {
     return (
-        <Box className="mb-16">
+        <Box className=" relative mb-16  w-full h-full">
             {/* Section Header */}
             <Box className="relative mb-8">
                 <AspectRatio ratio={16 / 4}>

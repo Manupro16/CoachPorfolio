@@ -22,13 +22,11 @@ interface TeamSectionProps {
 }
 
 const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
-    // Define the character limit for the description
+
     const textThreshold = 1800; // Adjust as needed
 
-    // Check if the description is longer than the threshold
     const isTextLong = team.description.length > textThreshold;
 
-    // Function to split text at the nearest word boundary
     function splitTextAtWord(text: string, limit: number): [string, string] {
         if (text.length <= limit) return [text, ''];
         const index = text.lastIndexOf(' ', limit);
@@ -46,10 +44,14 @@ const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
         <Grid
             columns={{ initial: '1fr', md: '1fr 1fr' }}
             gapX="5"
-            gapY="3"
+            gapY="1"
             align="start"
             className="mb-12"
         >
+            <Box
+                as="span"
+                className="block h-[3px] w-full bg-primary mt-2 mb-4 col-span-2"
+            />
             {/* Image Section */}
             <Box>
                 <AspectRatio
@@ -100,6 +102,10 @@ const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
                     </Text>
                 </Box>
             )}
+            <Box
+                as="span"
+                className="block h-[3px] w-full bg-primary mt-2 mb-4 col-span-2"
+            />
         </Grid>
     );
 };
