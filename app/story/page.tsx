@@ -108,21 +108,3 @@ Duis facilisis tincidunt facilisis rhoncus proin. Eros odio egestas congue, tort
 }
 
 export default StoryPage;
-
-
-
-
-
-            {/*<Box className="relative z-10 px-4 sm:px-6 lg:px-8 py-5">*/}
-
-
-
-
-
-
-
-
-
-            {/*    /!* Closing Section *!/*/}
-
-            {/*</Box>*/}
