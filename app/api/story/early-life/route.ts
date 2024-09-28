@@ -2,24 +2,11 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma'; // Adjust the import path based on your project structure
-import { z } from 'zod';
+import { storyIdSchema, putEarlyLifeSchema } from '@/lib/validation';
 
 // Define Zod schemas for request validation
 
-// Schema for GET and DELETE requests (only storyId is required)
-const storyIdSchema = z.object({
-    storyId: z.number().positive(),
-});
 
-// Schema for PUT requests
-const putEarlyLifeSchema = z.object({
-    storyId: z.number().positive(),
-    updatedTitle: z.string().optional(),
-    updatedContent: z.string().optional(),
-    updatedImage: z.string().url().optional(),
-}).refine((data) => data.updatedTitle || data.updatedContent || data.updatedImage, {
-    message: 'At least one field (updatedTitle, updatedContent, updatedImage) must be provided for update.',
-});
 
 // GET Handler: Retrieve EarlyLife section for a specific Story
 export async function GET(request: Request) {
