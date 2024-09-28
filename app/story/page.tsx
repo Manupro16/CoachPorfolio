@@ -1,4 +1,4 @@
-// components/StoryPage.tsx
+// story/StoryPage.tsx
 
 import React from 'react';
 import {Box, Grid,} from '@radix-ui/themes';
@@ -108,3 +108,10 @@ Duis facilisis tincidunt facilisis rhoncus proin. Eros odio egestas congue, tort
 }
 
 export default StoryPage;
+
+
+// Um, I think there are still mistakes or misunderstood, but let me clarify the story section of the page and how it works so that we can make a more accurate version of events.
+//
+//     The story section will be a new page where we expose the user to the story of Coach Chuy. So previously, we worked on the main page where the user gets greeted and exposed to what he will expend and get exposed to on the website, basically the main menu or the central part of the website. After we were done with that part, we went and worked on the Story page, where we displayed and exposed the user to the background and story of Coach Chuy.
+//
+//     The story page is in a folder called the story in the app folder. Since we are using next.js, that is how we can make a route so that the user can navigate to different sections, like the story section.
