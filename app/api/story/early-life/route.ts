@@ -4,68 +4,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma'; // Adjust the import path based on your project structure
 import { storyIdSchema, putEarlyLifeSchema } from '@/lib/validation';
 
-// Define Zod schemas for request validation
-
-
-
-// GET Handler: Retrieve EarlyLife section for a specific Story
-export async function GET(request: Request) {
-    try {
-        // Extract query parameters
-        const { searchParams } = new URL(request.url);
-        const storyIdParam = searchParams.get('storyId');
-
-        if (!storyIdParam) {
-            return NextResponse.json(
-                { message: 'Missing required query parameter: storyId' },
-                { status: 400 }
-            );
-        }
-
-        const parsedStoryId = parseInt(storyIdParam, 10);
-
-        // Validate storyId using Zod
-        const parseResult = storyIdSchema.safeParse({ storyId: parsedStoryId });
-
-        if (!parseResult.success) {
-            const errorMessages = parseResult.error.errors.map(err => err.message).join(', ');
-            return NextResponse.json(
-                { message: errorMessages },
-                { status: 400 }
-            );
-        }
-
-        const { storyId } = parseResult.data;
-
-        // Fetch the Story along with its EarlyLife
-        const story = await prisma.story.findUnique({
-            where: { id: storyId },
-            include: { earlyLife: true },
-        });
-
-        if (!story) {
-            return NextResponse.json(
-                { message: `Story with id ${storyId} not found.` },
-                { status: 404 }
-            );
-        }
-
-        if (!story.earlyLife) {
-            return NextResponse.json(
-                { message: 'Early Life section not found for this story.' },
-                { status: 404 }
-            );
-        }
-
-        return NextResponse.json(story.earlyLife, { status: 200 });
-    } catch (error) {
-        console.error('GET /api/story/early-life Error:', error);
-        return NextResponse.json(
-            { message: 'Internal Server Error' },
-            { status: 500 }
-        );
-    }
-}
 
 // PUT Handler: Update or Create EarlyLife section for a specific Story
 export async function PUT(request: Request) {
