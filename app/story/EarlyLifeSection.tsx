@@ -35,8 +35,8 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                             src={imageSrc}
                             alt={imageAlt}
                             title={imageAlt}
-                            layout="fill"
-                            objectFit="cover"
+                            style={{ objectFit: 'cover' }}
+                            fill
                             className="rounded-lg"
                         />
                     </AspectRatio>
