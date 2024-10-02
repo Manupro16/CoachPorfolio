@@ -5,8 +5,17 @@ import {Box, Grid,} from '@radix-ui/themes';
 import IntroductionSection from "@/app/story/IntroductionSection";
 import ClosingSection from "@/app/story/ClosingSection";
 import NoDataWarning from "@/app/story/NoDataWarning";
+import {prisma} from "@/lib/prisma";
+import EarlyLifeSection from "@/app/story/EarlyLifeSection";
+import {EarlyLife} from '@prisma/client';
 
-function StoryPage() {
+async function StoryPage() {
+
+    const earlyLife: EarlyLife | null = await prisma.earlyLife.findUnique({
+        where: {id: 1},
+    })
+
+
     return (
         <section title="story" className="w-screen h-auto relative">
             {/* Background Gradient */}
@@ -33,9 +42,14 @@ function StoryPage() {
             {/* Main Content */}
             <Grid as="div" columns="1fr" rows="auto">
                 <IntroductionSection playerStatus="Retired" coachStatus="Active"/>
-                <NoDataWarning ChildrenComponentName="EarlyLife" />
-                <NoDataWarning ChildrenComponentName="PlayerCareer" />
-                <NoDataWarning ChildrenComponentName="CoachingCareer" />
+                {earlyLife ? <EarlyLifeSection
+                    imageSrc={earlyLife.image}
+                    imageAlt="Early Life"
+                    title={earlyLife.title}
+                    content={earlyLife.content}
+                /> : <NoDataWarning ChildrenComponentName="EarlyLife"/>}
+                <NoDataWarning ChildrenComponentName="PlayerCareer"/>
+                <NoDataWarning ChildrenComponentName="CoachingCareer"/>
                 <ClosingSection
                     text="Coach Chuy Vera's dedication to soccer has left an indelible mark on the sport. His journey continues to inspire players and coaches around the world."
                 />
