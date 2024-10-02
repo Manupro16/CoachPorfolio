@@ -1,46 +1,12 @@
 // story/StoryPage.tsx
 
 import React from 'react';
-import {Box, Grid, } from '@radix-ui/themes';
+import {Box, Grid,} from '@radix-ui/themes';
 import IntroductionSection from "@/app/story/IntroductionSection";
-import EarlyLifeSection from "@/app/story/EarlyLifeSection";
-import CareerSection from "@/app/story/CareerSection";
 import ClosingSection from "@/app/story/ClosingSection";
-import {prisma} from '@/lib/prisma'; // Import Prisma Client
-import {CoachingCareer, EarlyLife, PlayerCareer, Story} from '@prisma/client';
-import NoDataWarning from "@/app/story/NoDataWarning"; // Import Prisma Types
+import NoDataWarning from "@/app/story/NoDataWarning";
 
-// Define the return type of the fetchStoryData function
-type FetchStoryData = Story & {
-    earlyLife: EarlyLife | null;
-    playerCareers: PlayerCareer[];
-    coachingCareers: CoachingCareer[];
-};
-
-async function fetchStoryData(): Promise<FetchStoryData | null> {
-    // Adjust the query based on your actual Prisma schema
-    return prisma.story.findFirst({
-        include: {
-            earlyLife: true,
-            playerCareers: true,
-            coachingCareers: true,
-        },
-    });
-}
-
-const StoryPage = async () => {
-    const story = await fetchStoryData();
-
-    if (!story) {
-        return (
-            <NoDataWarning />
-        );
-    }
-
-    // Extract sections data
-    const {earlyLife, playerCareers, coachingCareers} = story;
-
-
+function StoryPage() {
     return (
         <section title="story" className="w-screen h-auto relative">
             {/* Background Gradient */}
@@ -67,44 +33,9 @@ const StoryPage = async () => {
             {/* Main Content */}
             <Grid as="div" columns="1fr" rows="auto">
                 <IntroductionSection playerStatus="Retired" coachStatus="Active"/>
-                {earlyLife && (
-                    <EarlyLifeSection
-                        imageSrc={earlyLife.image}
-                        imageAlt="Early Life"
-                        title={earlyLife.title}
-                        content={earlyLife.content}
-                    />
-                )}
-                {/* Playing Career */}
-                {playerCareers.length > 0 && (
-                    <CareerSection
-                        title="Playing Career"
-                        subtitle="Discover the journey of Coach Vera as a professional soccer player."
-                        headerImage="/pic/chuyVeraSeleccion_2.jpg"
-                        ObjectPosition="top"
-                        teams={playerCareers.map((career) => ({
-                            name: career.team,
-                            image: career.image,
-                            dates: career.dates,
-                            description: career.description,
-                        }))}
-                    />
-                )}
-                {/* Coaching Career */}
-                {coachingCareers.length > 0 && (
-                    <CareerSection
-                        title="Coaching Career"
-                        subtitle="Explore the impactful coaching journey of Coach Vera."
-                        headerImage="/pic/Chuy-Vera1.webp"
-                        ObjectPosition="center"
-                        teams={coachingCareers.map((career) => ({
-                            name: career.team,
-                            image: career.image,
-                            dates: career.dates,
-                            description: career.description,
-                        }))}
-                    />
-                )}
+                <NoDataWarning ChildrenComponentName="EarlyLife" />
+                <NoDataWarning ChildrenComponentName="PlayerCareer" />
+                <NoDataWarning ChildrenComponentName="CoachingCareer" />
                 <ClosingSection
                     text="Coach Chuy Vera's dedication to soccer has left an indelible mark on the sport. His journey continues to inspire players and coaches around the world."
                 />
@@ -127,9 +58,8 @@ const StoryPage = async () => {
             </Box>
         </section>
     );
-};
+}
 
 export default StoryPage;
 
 
-// https://images.unsplash.com/photo-1479030160180-b1860951d696?&auto=format&fit=crop&w=1200&q=80
