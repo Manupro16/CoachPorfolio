@@ -9,41 +9,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Story {
-  id              Int              @id @default(autoincrement())
-  title           String
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  earlyLife       EarlyLife?       @relation(fields: [earlyLifeId], references: [id])
-  earlyLifeId     Int?             @unique
-  playerCareers   PlayerCareer[]   @relation("PlayerCareers")
-  coachingCareers CoachingCareer[] @relation("CoachingCareers")
-}
-
 model EarlyLife {
   id      Int    @id @default(autoincrement())
+  image   String
   title   String
   content String
-  image   String
-  story   Story? @relation
 }
 
-model PlayerCareer {
-  id          Int    @id @default(autoincrement())
-  team        String
-  image       String
-  dates       String
-  description String
-  story       Story  @relation("PlayerCareers", fields: [storyId], references: [id])
-  storyId     Int
-}
-
-model CoachingCareer {
-  id          Int    @id @default(autoincrement())
-  team        String
-  image       String
-  dates       String
-  description String
-  story       Story  @relation("CoachingCareers", fields: [storyId], references: [id])
-  storyId     Int
-}
+// model PlayerCareer {
+//   id          Int    @id @default(autoincrement())
+//   team        String
+//   image       String
+//   dates       String
+//   description String
+// }
+//
+// model CoachingCareer {
+//   id          Int    @id @default(autoincrement())
+//   team        String
+//   image       String
+//   dates       String
+//   description String
+// }
