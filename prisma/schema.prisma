@@ -16,18 +16,18 @@ model EarlyLife {
   content String
 }
 
-// model PlayerCareer {
-//   id          Int    @id @default(autoincrement())
-//   team        String
-//   image       String
-//   dates       String
-//   description String
-// }
-//
-// model CoachingCareer {
-//   id          Int    @id @default(autoincrement())
-//   team        String
-//   image       String
-//   dates       String
-//   description String
-// }
+model PlayerCareer {
+  id          Int    @id @default(autoincrement())
+  team        String
+  image       String
+  dates       String
+  description String
+}
+
+model CoachingCareer {
+  id          Int    @id @default(autoincrement())
+  team        String
+  image       String
+  dates       String
+  description String
+}
