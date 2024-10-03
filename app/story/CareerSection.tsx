@@ -39,11 +39,9 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                     <Image
                         src={headerImage}
                         alt={title}
-                        layout="fill"
-                        objectFit="cover"
-                        objectPosition={ObjectPosition}  // Move the image context to the top
+                        fill
                         className="rounded-lg"
-                        style={{ filter: 'brightness(0.75) opacity(0.9)' }}
+                        style={{ filter: 'brightness(0.75) opacity(0.9)', objectFit: 'cover', objectPosition: ObjectPosition,   }}
                     />
                     <Box className="absolute inset-0 bg-black bg-opacity-50 rounded-lg" />
                     <Flex

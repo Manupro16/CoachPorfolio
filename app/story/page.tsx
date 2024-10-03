@@ -7,13 +7,17 @@ import ClosingSection from "@/app/story/ClosingSection";
 import NoDataWarning from "@/app/story/NoDataWarning";
 import {prisma} from "@/lib/prisma";
 import EarlyLifeSection from "@/app/story/EarlyLifeSection";
-import {EarlyLife} from '@prisma/client';
+// import {EarlyLife, PlayerCareer} from '@prisma/client';
+import CareerSection from './CareerSection';
 
 async function StoryPage() {
 
-    const earlyLife: EarlyLife | null = await prisma.earlyLife.findUnique({
-        where: {id: 1},
-    })
+    // Fetch data in parallel
+    const [earlyLife, playerCareers, coachingCareers] = await Promise.all([
+        prisma.earlyLife.findUnique({ where: { id: 1 } }),
+        prisma.playerCareer.findMany({ orderBy: { id: 'asc' } }),
+        prisma.coachingCareer.findMany(),
+    ]);
 
 
     return (
@@ -48,7 +52,22 @@ async function StoryPage() {
                     title={earlyLife.title}
                     content={earlyLife.content}
                 /> : <NoDataWarning ChildrenComponentName="EarlyLife"/>}
-                <NoDataWarning ChildrenComponentName="PlayerCareer"/>
+                {playerCareers.length > 0 ? (
+                    <CareerSection
+                        title="Playing Career"
+                        headerImage="/pic/chuyVeraSeleccion_2.jpg"
+                        ObjectPosition="top"
+                        subtitle="Discover the journey of Coach Vera as a professional soccer player."
+                        teams={playerCareers.map((career) => ({
+                            name: career.team,
+                            image: career.image,
+                            dates: career.dates,
+                            description: career.description,
+                        }))}
+                    />
+                ) : (
+                    <NoDataWarning ChildrenComponentName="PlayerCareer" />
+                )}
                 <NoDataWarning ChildrenComponentName="CoachingCareer"/>
                 <ClosingSection
                     text="Coach Chuy Vera's dedication to soccer has left an indelible mark on the sport. His journey continues to inspire players and coaches around the world."

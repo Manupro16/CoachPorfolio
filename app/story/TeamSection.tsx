@@ -23,7 +23,7 @@ interface TeamSectionProps {
 
 const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
 
-    const textThreshold = 1800; // Adjust as needed
+    const textThreshold = 1900; // Adjust as needed
 
     const isTextLong = team.description.length > textThreshold;
 
@@ -62,8 +62,8 @@ const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
                         <Image
                             src={team.image}
                             alt={team.name}
-                            layout="fill"
-                            objectFit="cover"
+                            fill
+                            style={{ objectFit: 'cover' }}
                             className="rounded-lg"
                             priority
                         />
