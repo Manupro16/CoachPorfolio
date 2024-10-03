@@ -5,9 +5,8 @@ import {Box, Grid,} from '@radix-ui/themes';
 import IntroductionSection from "@/app/story/IntroductionSection";
 import ClosingSection from "@/app/story/ClosingSection";
 import NoDataWarning from "@/app/story/NoDataWarning";
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import EarlyLifeSection from "@/app/story/EarlyLifeSection";
-// import {EarlyLife, PlayerCareer} from '@prisma/client';
 import CareerSection from './CareerSection';
 
 async function StoryPage() {
@@ -16,7 +15,7 @@ async function StoryPage() {
     const [earlyLife, playerCareers, coachingCareers] = await Promise.all([
         prisma.earlyLife.findUnique({ where: { id: 1 } }),
         prisma.playerCareer.findMany({ orderBy: { id: 'asc' } }),
-        prisma.coachingCareer.findMany(),
+        prisma.coachingCareer.findMany( { orderBy: { id: 'asc' } }),
     ]);
 
 
@@ -68,7 +67,22 @@ async function StoryPage() {
                 ) : (
                     <NoDataWarning ChildrenComponentName="PlayerCareer" />
                 )}
-                <NoDataWarning ChildrenComponentName="CoachingCareer"/>
+                {coachingCareers.length > 0 ? (
+                    <CareerSection
+                        title="Coaching Career"
+                        subtitle="Explore the impactful coaching journey of Coach Vera."
+                        headerImage="/pic/Chuy-Vera1.webp"
+                        ObjectPosition="center"
+                        teams={coachingCareers.map((career) => ({
+                            name: career.team,
+                            image: career.image,
+                            dates: career.dates,
+                            description: career.description,
+                        }))}
+                    />
+                ) : (
+                    <NoDataWarning ChildrenComponentName="CoachingCareer" />
+                )}
                 <ClosingSection
                     text="Coach Chuy Vera's dedication to soccer has left an indelible mark on the sport. His journey continues to inspire players and coaches around the world."
                 />
