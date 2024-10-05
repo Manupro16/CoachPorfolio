@@ -2,7 +2,8 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import {earlyLifeSchema, earlyLifeUpdateSchema} from "@/lib/validation/story"; // Adjust the import path based on your project structure
+import {earlyLifeSchema, earlyLifeUpdateSchema} from "@/lib/validation/story";
+import {Prisma} from "@prisma/client"; // Adjust the import path based on your project structure
 
 
 // POST /api/story/early-life
@@ -67,12 +68,11 @@ export async function PATCH(request: Request) {
     } catch (error) {
         console.error('PATCH EarlyLife Error:', error);
 
-        if (error.code === 'P2025') {
-            // Record not found
-            return NextResponse.json(
-                { message: 'EarlyLife entry not found' },
-                { status: 404 }
-            );
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === 'P2025') {
+                // Record not found
+                return NextResponse.json({ message: 'EarlyLife entry not found' }, { status: 404 });
+            }
         }
 
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
