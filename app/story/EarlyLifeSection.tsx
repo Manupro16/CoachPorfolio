@@ -1,5 +1,5 @@
 import React from 'react';
-import { AspectRatio, Box, Flex, Grid, Heading, Text } from '@radix-ui/themes';
+import { AspectRatio, Box, Button, Flex, Grid, Heading, Link, Text } from '@radix-ui/themes';
 import Image from 'next/image';
 
 interface EarlyLifeSectionProps {
@@ -19,6 +19,7 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
     const isTextLong = content.length > textThreshold;
     const firstPart = isTextLong ? content.substring(0, textThreshold) : content;
     const secondPart = isTextLong ? content.substring(textThreshold) : '';
+
 
     return (
         <Box className="relative w-full mb-16 pt-10 px-4 sm:px-6 lg:px-8">
@@ -42,15 +43,23 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                     </AspectRatio>
                 </Box>
 
+
                 {/* Text Section */}
                 <Flex
                     direction="column"
                     align={{ initial: 'center', md: 'start' }}
                     className="text-center md:text-left"
                 >
-                    <Heading as="h2" size="7" className="font-bold text-primary">
-                        {title}
-                    </Heading>
+                    <Flex gap="4" align="center">
+                        <Heading as="h2" size="7" className="font-bold text-primary">
+                            {title}
+                        </Heading>
+                        <Link href="/story/edit/earlyLife" >
+                            <Button variant="solid" size="1">
+                                Edit Early Life
+                            </Button>
+                        </Link>
+                    </Flex>
                     <Box
                         as="span"
                         className="block h-[3px] w-1/2 bg-primary mt-2 mb-4"
