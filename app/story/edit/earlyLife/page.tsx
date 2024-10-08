@@ -3,9 +3,11 @@
 'use client'; // Ensure this component is treated as a client-side component
 
 import React, {useCallback, useEffect, useState} from "react";
-import {Box, Button, Flex, Heading, Switch, Text, TextField} from "@radix-ui/themes";
+import {Box, Button, Flex, Heading, Switch, Text, TextField, AlertDialog } from "@radix-ui/themes";
 import dynamic from "next/dynamic";
 import debounce from 'lodash.debounce';
+import axios from "axios";
+import { useRouter } from 'next/navigation';
 
 
 // Dynamically import the ReactMDEditor component to prevent SSR issues
@@ -13,38 +15,69 @@ const DynamicReactMDEditor = dynamic(() => import('@/components/DynamicReactMDEd
     ssr: false,
 });
 
+
+
 function EditEarlyLifePage() {
 
-
     const [colorMode, setColorMode] = useState<'light' | 'dark'>('dark');
-    const [imageUrl, setImageUrl] = useState<string>('https://via.placeholder.com/400x200');
-    const [content, setContent] = useState<string>('Initial content goes here...');
-    const [isValidImage, setIsValidImage] = useState<boolean>(true); // Assume default image is valid
+    const [title, setTitle] = useState<string>('');
+    const [imageUrl, setImageUrl] = useState<string>('');
+    const [content, setContent] = useState<string>('');
+    const [isValidImage, setIsValidImage] = useState<boolean>(true);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+    const router = useRouter();
+
+
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get('/api/story/early-life');
+                if (response.status === 200) {
+                    const data = response.data;
+                    if (data) {
+                        setTitle(data.title || '');
+                        setImageUrl(data.image || '');
+                        setContent(data.content || '');
+                        setIsEditing(true);
+                    } else {
+                        setIsEditing(false);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching early life data:', error);
+                setIsEditing(false);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     // Custom handler to ensure content is always a string
     const handleContentChange = (value: string | undefined) => {
         setContent(value || '');
     };
 
-    function toggleColorMode(){
-        setColorMode(prevMode => (prevMode === 'dark' ? 'light' : 'dark'));
-    }
+    const toggleColorMode = () => {
+        setColorMode((prevMode) => (prevMode === 'dark' ? 'light' : 'dark'));
+    };
 
     // Debounced handler for Image URL input changes
     const debouncedSetImageUrl = useCallback(
         debounce((url: string) => {
             setImageUrl(url);
             setIsValidImage(true); // Reset validity; will be updated based on image load
-        }, 500), // 500ms delay
-        [setImageUrl, setIsValidImage]
+        }, 500),
+        []
     );
 
     // Handler for Image URL input changes
     const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const url = e.target.value;
-        setImageUrl(url);
-        setIsValidImage(true); // Reset validity; will be updated based on image load
+        debouncedSetImageUrl(url);
     };
 
     // Cleanup debounce on unmount
@@ -73,6 +106,65 @@ function EditEarlyLifePage() {
             return false;
         }
     };
+
+    // Form submission handler
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        // Client-side validation
+        if (!title.trim()) {
+            alert('Title is required.');
+            return;
+        }
+        if (!content.trim()) {
+            alert('Content is required.');
+            return;
+        }
+
+        const data = {
+            title,
+            image: imageUrl,
+            content,
+        };
+
+        try {
+            setIsSubmitting(true);
+            let response;
+            if (isEditing) {
+                // If editing existing data, make a PATCH request
+                response = await axios.patch('/api/story/early-life', data);
+            } else {
+                // If creating new data, make a POST request
+                response = await axios.post('/api/story/early-life', data);
+
+            }
+
+            if (response.status === 200 || response.status === 201) {
+                // Redirect to the success page
+                router.push('/story');
+
+            } else {
+                // Handle server errors
+                console.error('Server Error:', response.data);
+            }
+        } catch (error) {
+            // Handle network errors or other errors
+            console.error('Error:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Handler for the Cancel button
+    const handleCancel = () => {
+        // Reset form fields
+        setTitle('');
+        setImageUrl('');
+        setContent('');
+        setIsValidImage(true);
+        router.back(); // Navigate back to the previous page
+    };
+
 
 
     return (
@@ -104,7 +196,7 @@ function EditEarlyLifePage() {
 
                    {/* Form Container */}
                    <Box className="shadow-md rounded-lg p-8 w-full max-w-3xl bg-gray-900">
-                       <form className="space-y-6">
+                       <form className="space-y-6" onSubmit={handleSubmit}>
                            {/* Title Field */}
                            <Box>
                                <Heading as="h1" size="4" className="text-4xl font-bold text-primary mb-4">
@@ -115,6 +207,8 @@ function EditEarlyLifePage() {
                                    name="title"
                                    type="text"
                                    placeholder="Enter title"
+                                   value={title}
+                                   onChange={e => setTitle(e.target.value)}
                                    className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'}`}
                                />
                            </Box>
@@ -205,14 +299,43 @@ function EditEarlyLifePage() {
 
                            {/* Action Buttons */}
                            <Flex className="justify-end space-x-4">
-                               <Button
-                                   type="button"
-                                   variant="outline"
-                                   className={`px-4 py-2 border rounded-md hover:bg-gray-50 transition-colors duration-300 ${colorMode === 'dark' ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
-
-                               >
-                                   Cancel
-                               </Button>
+                               <AlertDialog.Root>
+                                   <AlertDialog.Trigger >
+                                       <Button
+                                           type="button"
+                                           variant="outline"
+                                           className={`px-4 py-2 border rounded-md hover:bg-gray-50 transition-colors duration-300 ${
+                                               colorMode === 'dark' ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                           }`}
+                                       >
+                                           Cancel
+                                       </Button>
+                                   </AlertDialog.Trigger>
+                                   <AlertDialog.Content maxWidth="450px">
+                                       <AlertDialog.Title>Discard Changes</AlertDialog.Title>
+                                       <AlertDialog.Description size="2">
+                                           Are you sure you want to discard all changes? This action cannot be undone.
+                                       </AlertDialog.Description>
+                                       <Flex gap="3" mt="4" justify="end">
+                                           <AlertDialog.Cancel >
+                                               <Button variant="soft" color="gray">
+                                                   Continue Editing
+                                               </Button>
+                                           </AlertDialog.Cancel>
+                                           <AlertDialog.Action >
+                                               <Button
+                                                   variant="solid"
+                                                   color="red"
+                                                   onClick={() => {
+                                                       handleCancel();
+                                                   }}
+                                               >
+                                                   Discard Changes
+                                               </Button>
+                                           </AlertDialog.Action>
+                                       </Flex>
+                                   </AlertDialog.Content>
+                               </AlertDialog.Root>
                                <Button
                                    type="submit"
                                    variant="solid"

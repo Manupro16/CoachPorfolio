@@ -1,3 +1,5 @@
+//story/EarlyLifeSection.tsx
+
 import React from 'react';
 import { AspectRatio, Box, Button, Flex, Grid, Heading, Link, Text } from '@radix-ui/themes';
 import Image from 'next/image';
