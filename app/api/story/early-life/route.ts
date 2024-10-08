@@ -5,6 +5,23 @@ import { prisma } from '@/lib/prisma';
 import {earlyLifeSchema, earlyLifeUpdateSchema} from "@/lib/validation/story";
 import {Prisma} from "@prisma/client"; // Adjust the import path based on your project structure
 
+export async function GET() {
+    try {
+        const earlyLife = await prisma.earlyLife.findUnique({
+            where: { id: 1 }
+        });
+
+        if (!earlyLife) {
+            return NextResponse.json({ message: 'EarlyLife entry not found' }, { status: 404 });
+        }
+
+        return NextResponse.json(earlyLife, { status: 200 });
+    } catch (error) {
+        console.error('GET EarlyLife Error:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
 
 // POST /api/story/early-life
 export async function POST(request: Request) {
