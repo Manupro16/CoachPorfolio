@@ -1,0 +1,4 @@
+{
+  "ignoreDirs": ["node_modules", "dist", "build"],
+  "ignoreMatches": ["@types/*", "autoprefixer", "postcss"]
+}
