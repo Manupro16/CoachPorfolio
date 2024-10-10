@@ -66,12 +66,13 @@ function EditEarlyLifePage() {
     };
 
     useEffect(() => {
-        const controller = new AbortController();
+        // Remove the AbortController
+        // const controller = new AbortController();
+
         const fetchData = async () => {
             try {
-                const response = await axios.get('/api/story/early-life', {
-                    signal: controller.signal,
-                });
+                // Remove the signal option
+                const response = await axios.get('/api/story/early-life');
                 if (response.status === 200) {
                     const data = response.data;
                     if (data) {
@@ -83,7 +84,7 @@ function EditEarlyLifePage() {
                             setUseImageUrl(true);
                             setImageUrl(data.image);
                             setImagePreviewUrl(data.image);
-                        } else if (data.hasImageData) {
+                        } else if (data.imageData) {
                             setUseImageUrl(false);
                             setImagePreviewUrl('/api/story/early-life/image');
                         }
@@ -92,12 +93,8 @@ function EditEarlyLifePage() {
                     }
                 }
             } catch (error) {
-                if (axios.isCancel(error)) {
-                    console.log('Request canceled', error.message);
-                } else {
-                    console.error('Error fetching early life data:', error);
-                    setFetchError('No Data Available Please create new Data.');
-                }
+                console.error('Error fetching early life data:', error);
+                setFetchError('No Data Available. Please create new data.');
             } finally {
                 setIsLoading(false);
             }
@@ -105,11 +102,11 @@ function EditEarlyLifePage() {
 
         fetchData();
 
-        return () => {
-            controller.abort();
-        };
+        // Remove the cleanup function
+        // return () => {
+        //   controller.abort();
+        // };
     }, []);
-
 
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {

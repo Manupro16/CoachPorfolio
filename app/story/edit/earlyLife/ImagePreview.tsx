@@ -14,6 +14,9 @@ const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError,
 
     let previewUrl = '';
 
+    console.log('Image URL:', imageUrl);
+    console.log('Image Preview URL:', imagePreviewUrl);
+
     if (imageUrl) {
         previewUrl = imageUrl;
     } else if (imagePreviewUrl) {
