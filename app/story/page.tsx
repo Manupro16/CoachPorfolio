@@ -18,6 +18,16 @@ async function StoryPage() {
         prisma.coachingCareer.findMany( { orderBy: { id: 'asc' } }),
     ]);
 
+    // Determine the image source for EarlyLifeSection
+    let imageSrc = '';
+    if (earlyLife) {
+        if (earlyLife.image) {
+            imageSrc = earlyLife.image;
+        } else if (earlyLife.imageData) {
+            imageSrc = '/api/story/early-life/image';
+        }
+    }
+
 
     return (
         <section title="story" className="w-screen h-auto relative">
@@ -46,11 +56,11 @@ async function StoryPage() {
             <Grid as="div" columns="1fr" rows="auto">
                 <IntroductionSection playerStatus="Retired" coachStatus="Active"/>
                 {earlyLife ? <EarlyLifeSection
-                    imageSrc={earlyLife.image}
+                    imageSrc={imageSrc}
                     imageAlt="Early Life"
                     title={earlyLife.title}
                     content={earlyLife.content}
-                /> : <NoDataWarning ChildrenComponentName="EarlyLife"/>}
+                /> : <NoDataWarning ChildrenComponentName="earlyLife"/>}
                 {playerCareers.length > 0 ? (
                     <CareerSection
                         title="Playing Career"

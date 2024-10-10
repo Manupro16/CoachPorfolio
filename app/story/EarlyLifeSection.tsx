@@ -23,6 +23,7 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
     const secondPart = isTextLong ? content.substring(textThreshold) : '';
 
 
+
     return (
         <Box className="relative w-full mb-16 pt-10 px-4 sm:px-6 lg:px-8">
             <Grid
@@ -34,13 +35,11 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                 {/* Image Section */}
                 <Box>
                     <AspectRatio ratio={4 / 3}>
-                        <Image
+                        <img
                             src={imageSrc}
                             alt={imageAlt}
                             title={imageAlt}
-                            style={{ objectFit: 'cover' }}
-                            fill
-                            className="rounded-lg"
+                            className="w-full h-full object-cover rounded-lg"
                         />
                     </AspectRatio>
                 </Box>

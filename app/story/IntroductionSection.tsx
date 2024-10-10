@@ -1,5 +1,5 @@
 import React from 'react';
-import {Badge, Box, Flex, Heading, Quote, Text} from '@radix-ui/themes';
+import {Badge, Box , Flex, Heading, Quote, Text} from '@radix-ui/themes';
 
 
 interface IntroductionSectionProps {

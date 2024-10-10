@@ -1,4 +1,4 @@
-import {Flex, Heading} from "@radix-ui/themes";
+import {Button, Flex, Heading, Link} from "@radix-ui/themes";
 import React from "react";
 
 interface NoDataWarningProps {
@@ -7,16 +7,20 @@ interface NoDataWarningProps {
 
 function NoDataWarning({ ChildrenComponentName  }: NoDataWarningProps) {
     return (
-                <Flex as="div" align="start" justify="center" className="w-screen h-screen ">
+                <Flex as="div" align="start" justify="center" className="w-screen h-screen" gap="4">
                     <Heading
                         as="h1"
                         size="5"
                         weight="bold"
-                        className="text-textLight leading-tight "
-                        style={{textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)'}}
+                        className="text-white"
                     >
                         No {ChildrenComponentName} data available
                     </Heading>
+                    <Link href={`/story/edit/${ChildrenComponentName}`}>
+                        <Button variant="solid" size="1">
+                            Edit {ChildrenComponentName} Life
+                        </Button>
+                    </Link>
                 </Flex>
     );
 }

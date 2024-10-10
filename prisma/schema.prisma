@@ -10,10 +10,12 @@ datasource db {
 }
 
 model EarlyLife {
-  id      Int    @id @default(autoincrement())
-  image   String
-  title   String
-  content String
+  id        Int     @id @default(autoincrement())
+  image     String? // URL of the image
+  imageData Bytes? // Binary data of the image
+  imageType String? // MIME type of the image
+  title     String
+  content   String
 }
 
 model PlayerCareer {

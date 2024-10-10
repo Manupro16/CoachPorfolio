@@ -1,13 +1,26 @@
+//  story/edit/earlyLife/imagePreview
+
+
 import { Box, Text } from "@radix-ui/themes";
 import React from "react";
 
 interface ImagePreviewProps {
-    imageUrl: string;
+    imageUrl?: string;
     imageError: string | null;
+    imagePreviewUrl?: string; // Optional prop for pre-rendering images
 }
 
-const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError }) => {
-    if (!imageUrl) {
+const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError, imagePreviewUrl }) => {
+
+    let previewUrl = '';
+
+    if (imageUrl) {
+        previewUrl = imageUrl;
+    } else if (imagePreviewUrl) {
+        previewUrl = imagePreviewUrl;
+    }
+
+    if (!previewUrl) {
         return (
             <Box className="w-full max-w-md h-48 flex items-center justify-center rounded-md shadow-sm bg-gray-200">
                 <Text as="p" className="text-gray-500">
@@ -29,7 +42,7 @@ const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError 
 
     return (
         <img
-            src={imageUrl}
+            src={previewUrl}
             alt="Image Preview"
             className="w-full max-w-md h-auto rounded-md shadow-sm object-cover"
         />

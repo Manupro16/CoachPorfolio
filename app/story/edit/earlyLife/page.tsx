@@ -2,14 +2,18 @@
 
 'use client'; // Ensure this component is treated as a client-side component
 
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {Box, Button, Flex, Heading, Switch, Text, TextField, AlertDialog } from "@radix-ui/themes";
 import dynamic from "next/dynamic";
 import debounce from 'lodash.debounce';
 import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
-import {EarlyLifeData, earlyLifeSchema} from '@/lib/validation/story/earlyLife';
+import {
+    BaseEarlyLifeData,
+    earlyLifeSchema,
+    fieldSchemas
+} from '@/lib/validation/story/earlyLife';
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import RenderImagePreview from "./ImagePreview";
 
@@ -36,25 +40,31 @@ function EditEarlyLifePage() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [fetchError, setFetchError] = useState<string>('');
     const [formError, setFormError] = useState<string>('');
+    const [useImageUrl, setUseImageUrl] = useState<boolean>(true);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string>('');
 
 
     const router = useRouter();
 
+    const previewUrlRef = useRef<string | null>(null);
 
-    // Function to validate individual fields
-    const validateField = (fieldName: keyof EarlyLifeData, value: any): string => {
+
+
+
+    const validateField = (fieldName: keyof BaseEarlyLifeData, value: unknown): string => {
         try {
-            earlyLifeSchema.pick({[fieldName]: true}).parse({[fieldName]: value});
+            const fieldSchema = fieldSchemas[fieldName];
+            fieldSchema.parse(value);
             return '';
         } catch (error) {
-            if (error instanceof z.ZodError) {
+            if (error instanceof z.ZodError && error.errors.length > 0) {
                 return error.errors[0].message;
             }
             return 'Invalid value';
         }
     };
 
-    // Fetch existing data on component mount
     useEffect(() => {
         const controller = new AbortController();
         const fetchData = async () => {
@@ -66,9 +76,17 @@ function EditEarlyLifePage() {
                     const data = response.data;
                     if (data) {
                         setTitle(data.title || '');
-                        setImageUrl(data.image || '');
                         setContent(data.content || '');
                         setIsEditing(true);
+
+                        if (data.image) {
+                            setUseImageUrl(true);
+                            setImageUrl(data.image);
+                            setImagePreviewUrl(data.image);
+                        } else if (data.hasImageData) {
+                            setUseImageUrl(false);
+                            setImagePreviewUrl('/api/story/early-life/image');
+                        }
                     } else {
                         setIsEditing(false);
                     }
@@ -78,7 +96,7 @@ function EditEarlyLifePage() {
                     console.log('Request canceled', error.message);
                 } else {
                     console.error('Error fetching early life data:', error);
-                    setFetchError('Failed to load data. Please try again.');
+                    setFetchError('No Data Available Please create new Data.');
                 }
             } finally {
                 setIsLoading(false);
@@ -91,6 +109,7 @@ function EditEarlyLifePage() {
             controller.abort();
         };
     }, []);
+
 
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -122,12 +141,44 @@ function EditEarlyLifePage() {
         []
     );
 
-    const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        const url = e.target.value;
-        setImageUrl(url);
-        setImageError(validateField('image', url));
-        debouncedValidateImage(url);
+    const handleUseImageUrlChange = (checked: boolean) => {
+        setUseImageUrl(checked);
+
+        if (checked) {
+            // Reset image file-related state
+            setImageFile(null);
+            setImagePreviewUrl('');
+        } else {
+            // Reset image URL-related state
+            setImageUrl('');
+        }
     };
+
+    const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+        const file = e.target.files?.[0] || null;
+        setImageFile(file);
+        setImageError('');
+
+        if (file) {
+            // Revoke the previous object URL if it exists
+            if (previewUrlRef.current) {
+                URL.revokeObjectURL(previewUrlRef.current);
+            }
+
+            const previewUrl = URL.createObjectURL(file);
+            previewUrlRef.current = previewUrl;
+            setImagePreviewUrl(previewUrl);
+        } else {
+            // Revoke the previous object URL if it exists
+            if (previewUrlRef.current) {
+                URL.revokeObjectURL(previewUrlRef.current);
+                previewUrlRef.current = null;
+            }
+            setImagePreviewUrl('');
+        }
+    };
+
+
 
     // Cleanup debounce on unmount
     useEffect(() => {
@@ -137,19 +188,27 @@ function EditEarlyLifePage() {
     }, [debouncedValidateImage]);
 
 
-    // Form submission handler with validation
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
 
-        const data: EarlyLifeData = {
+        // Prepare fields for validation
+        const fields: Partial<BaseEarlyLifeData> = {
             title,
-            image: imageUrl,
             content,
         };
 
-        // Validate the entire form data
+        if (useImageUrl) {
+            fields.image = imageUrl;
+        } else if (imageFile) {
+            fields.imageData = true; // Indicate that an image file has been provided
+        } else {
+            setImageError('Please provide an image.');
+            return;
+        }
+
+        // Validate the data using the updated schema
         try {
-            earlyLifeSchema.parse(data);
+            earlyLifeSchema.parse(fields);
             setTitleError('');
             setImageError('');
             setContentError('');
@@ -164,14 +223,32 @@ function EditEarlyLifePage() {
             }
         }
 
-        // Proceed with form submission if validation passes
+        // Create FormData
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('content', content);
+
+        if (useImageUrl) {
+            formData.append('image', imageUrl);
+        } else if (imageFile) {
+            formData.append('image', imageFile);
+        } else {
+            setImageError('Please provide an image.');
+            return;
+        }
+
+        // Proceed with form submission
         try {
             setIsSubmitting(true);
             let response;
             if (isEditing) {
-                response = await axios.patch('/api/story/early-life', data);
+                response = await axios.patch('/api/story/early-life', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
             } else {
-                response = await axios.post('/api/story/early-life', data);
+                response = await axios.post('/api/story/early-life', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
             }
 
             if (response.status === 200 || response.status === 201) {
@@ -188,10 +265,28 @@ function EditEarlyLifePage() {
         }
     };
 
+
     // Handler for the Cancel button
     const handleCancel = (): void => {
         router.back(); // Navigate back to the previous page
     };
+
+    useEffect(() => {
+        return () => {
+            // Cleanup the object URL when the component unmounts
+            if (previewUrlRef.current) {
+                URL.revokeObjectURL(previewUrlRef.current);
+            }
+        };
+    }, []);
+
+    const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+        const url = e.target.value;
+        setImageUrl(url);
+        setImageError(validateField('image', url));
+        debouncedValidateImage(url);
+    };
+
 
     return (
         <section className="w-screen h-auto relative">
@@ -251,7 +346,9 @@ function EditEarlyLifePage() {
                                     className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                         colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                     }`}
+
                                 />
+
                                 {titleError && (
                                     <Text as="p" className="text-red-500 mb-2">
                                         {titleError}
@@ -259,29 +356,68 @@ function EditEarlyLifePage() {
                                 )}
                             </Box>
 
-                            {/* Image URL Field with Live Preview */}
+                            {/* Image Source Selection */}
                             <Box>
-                                <Heading as="h1" size="4" className="font-bold text-primary mb-4">
-                                    Image URL
-                                </Heading>
-                                <TextField.Root
-                                    id="image"
-                                    name="image"
-                                    type="text"
-                                    placeholder="Enter image URL"
-                                    value={imageUrl}
-                                    onChange={handleImageUrlChange}
-                                    className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
-                                    }`}/>
-                                {imageError && (
-                                    <Text as="p" className="text-red-500 mb-2">
-                                        {imageError}
+                                <Flex align="center" mb="4">
+                                    <Text as="span" mr="2">
+                                        Use Image URL
                                     </Text>
-                                )}
-                                {/* Image Preview */}
-                                <Box className="mt-4">
-                                    <RenderImagePreview imageUrl={imageUrl} imageError={imageError} />
+                                    <Switch
+                                        checked={useImageUrl}
+                                        onCheckedChange={handleUseImageUrlChange}
+                                    />
+                                    <Text as="span" ml="2">
+                                        Upload Image
+                                    </Text>
+                                </Flex>
+                            </Box>
+
+                            {/* Conditionally render image input fields */}
+                            {useImageUrl ? (
+                                <Box>
+                                    <Heading as="h1" size="4" className="font-bold text-primary mb-4">
+                                        Image URL
+                                    </Heading>
+                                    <TextField.Root
+                                        id="image"
+                                        name="image"
+                                        type="text"
+                                        placeholder="Enter image URL"
+                                        value={imageUrl}
+                                        onChange={handleImageUrlChange}
+                                        className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
+                                            colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
+                                        }`}
+
+                                    />
+                                    {imageError && (
+                                        <Text as="p" className="text-red-500 mb-2">
+                                            {imageError}
+                                        </Text>
+                                    )}
                                 </Box>
+                            ) : (
+                                <Box>
+                                    <Heading as="h1" size="4" className="font-bold text-primary mb-4">
+                                        Upload Image
+                                    </Heading>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageFileChange}
+                                        className="mt-1 block w-full text-white"
+                                    />
+                                    {imageError && (
+                                        <Text as="p" className="text-red-500 mb-2">
+                                            {imageError}
+                                        </Text>
+                                    )}
+                                </Box>
+                            )}
+
+                            {/* Image Preview */}
+                            <Box className="mt-4">
+                                <RenderImagePreview imageUrl={imageUrl} imageError={imageError} imagePreviewUrl={imagePreviewUrl} />
                             </Box>
 
                             {/* Content Field */}
