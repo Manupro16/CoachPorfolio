@@ -2,8 +2,8 @@
 
 'use client'; // Ensure this component is treated as a client-side component
 
-import React, {useCallback, useEffect, useRef, useState} from "react";
-import {Box, Button, Flex, Heading, Switch, Text, TextField, AlertDialog } from "@radix-ui/themes";
+import React, {useCallback, useEffect, useReducer, useRef} from "react";
+import {Box, Button, Flex, Heading, Switch, Text, TextField, AlertDialog, RadioGroup  } from "@radix-ui/themes";
 import dynamic from "next/dynamic";
 import debounce from 'lodash.debounce';
 import axios from "axios";
@@ -12,7 +12,6 @@ import { z } from 'zod';
 import {
     BaseEarlyLifeData,
     earlyLifeSchema,
-    fieldSchemas
 } from '@/lib/validation/story/earlyLife';
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import RenderImagePreview from "./ImagePreview";
@@ -24,137 +23,267 @@ const DynamicReactMDEditor = dynamic(() => import('@/components/DynamicReactMDEd
     ssr: false,
 });
 
+// Define the state interface
+interface FormState {
+    colorMode: 'light' | 'dark';
+    title: string;
+    imageUrl: string;
+    content: string;
+    isEditing: boolean;
+    isSubmitting: boolean;
+    isLoading: boolean;
+    useImageUrl: boolean;
+    imageFile: File | null;
+    imagePreviewUrl: string;
+    errors: {
+        title: string;
+        image: string;
+        content: string;
+        fetch: string;
+        form: string;
+    };
+    fetchError: string;
+    formError: string;
+}
+
+// Define the initial state
+const initialState: FormState = {
+    colorMode: 'dark',
+    title: '',
+    imageUrl: '',
+    content: '',
+    isEditing: false,
+    isSubmitting: false,
+    isLoading: true,
+    useImageUrl: true,
+    imageFile: null,
+    imagePreviewUrl: '',
+    errors: {
+        title: '',
+        image: '',
+        content: '',
+        fetch: '',
+        form: '',
+    },
+    fetchError: '',
+    formError: '',
+};
+
+// Define a generic SetFieldAction
+type SetFieldAction<K extends keyof FormState> = {
+    type: 'SET_FIELD';
+    field: K;
+    value: FormState[K];
+};
+
+// Define the complete Action type
+type Action =
+    | SetFieldAction<keyof FormState>
+    | { type: 'SET_ERROR'; field: keyof FormState['errors']; value: string }
+    | { type: 'SET_STATE'; payload: Partial<FormState> }
+    | { type: 'RESET_FORM' };
+
+// Reducer function
+function formReducer(state: FormState, action: Action): FormState {
+    switch (action.type) {
+        case 'SET_FIELD':
+            return { ...state, [action.field]: action.value };
+        case 'SET_ERROR':
+            return { ...state, errors: { ...state.errors, [action.field]: action.value } };
+        case 'SET_STATE':
+            return { ...state, ...action.payload };
+        case 'RESET_FORM':
+            return initialState;
+        default:
+            return state;
+    }
+}
+
 
 
 function EditEarlyLifePage() {
 
-    const [colorMode, setColorMode] = useState<'light' | 'dark'>('dark');
-    const [title, setTitle] = useState<string>('');
-    const [imageUrl, setImageUrl] = useState<string>('');
-    const [content, setContent] = useState<string>('');
-    const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-    const [titleError, setTitleError] = useState<string>('');
-    const [imageError, setImageError] = useState<string>('');
-    const [contentError, setContentError] = useState<string>('');
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [fetchError, setFetchError] = useState<string>('');
-    const [formError, setFormError] = useState<string>('');
-    const [useImageUrl, setUseImageUrl] = useState<boolean>(true);
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imagePreviewUrl, setImagePreviewUrl] = useState<string>('');
+    const [state, dispatch] = useReducer(formReducer, initialState);
 
+
+    const {
+        colorMode,
+        title,
+        imageUrl,
+        content,
+        isSubmitting,
+        isLoading,
+        useImageUrl,
+        imagePreviewUrl,
+        errors,
+        fetchError,
+        formError,
+    } = state;
 
     const router = useRouter();
-
     const previewUrlRef = useRef<string | null>(null);
 
 
-
-
-    const validateField = (fieldName: keyof BaseEarlyLifeData, value: unknown): string => {
+    // Unified validation function
+    const validateForm = (fields: Partial<BaseEarlyLifeData>): { [key: string]: string } => {
         try {
-            const fieldSchema = fieldSchemas[fieldName];
-            fieldSchema.parse(value);
-            return '';
+            earlyLifeSchema.parse(fields);
+            return {};
         } catch (error) {
-            if (error instanceof z.ZodError && error.errors.length > 0) {
-                return error.errors[0].message;
+            if (error instanceof z.ZodError) {
+                const fieldErrors = error.flatten().fieldErrors;
+                const errors: { [key: string]: string } = {};
+                for (const key in fieldErrors) {
+                    if (fieldErrors[key]) {
+                        errors[key] = fieldErrors[key]?.[0] || '';
+                    }
+                }
+                return errors;
             }
-            return 'Invalid value';
+            return {};
         }
     };
 
     useEffect(() => {
-        // Remove the AbortController
-        // const controller = new AbortController();
+        const controller = new AbortController();
+        let isMounted = true;
 
         const fetchData = async () => {
             try {
-                // Remove the signal option
-                const response = await axios.get('/api/story/early-life');
-                if (response.status === 200) {
-                    const data = response.data;
-                    if (data) {
-                        setTitle(data.title || '');
-                        setContent(data.content || '');
-                        setIsEditing(true);
+                const response = await axios.get('/api/story/early-life', {
+                    signal: controller.signal,
+                });
+                if (isMounted) {
+                    if (response.status === 200) {
+                        const data = response.data;
+                        if (data) {
+                            dispatch({
+                                type: 'SET_STATE',
+                                payload: {
+                                    title: data.title || '',
+                                    content: data.content || '',
+                                    isEditing: true,
+                                },
+                            });
 
-                        if (data.image) {
-                            setUseImageUrl(true);
-                            setImageUrl(data.image);
-                            setImagePreviewUrl(data.image);
-                        } else if (data.imageData) {
-                            setUseImageUrl(false);
-                            setImagePreviewUrl('/api/story/early-life/image');
+                            if (data.image) {
+                                dispatch({
+                                    type: 'SET_STATE',
+                                    payload: {
+                                        useImageUrl: true,
+                                        imageUrl: data.image,
+                                        imagePreviewUrl: data.image,
+                                    },
+                                });
+                            } else if (data.imageData) {
+                                dispatch({
+                                    type: 'SET_STATE',
+                                    payload: {
+                                        useImageUrl: false,
+                                        imagePreviewUrl: '/api/story/early-life/image',
+                                    },
+                                });
+                            }
+                        } else {
+                            dispatch({ type: 'SET_FIELD', field: 'isEditing', value: false });
                         }
-                    } else {
-                        setIsEditing(false);
                     }
                 }
             } catch (error) {
-                console.error('Error fetching early life data:', error);
-                setFetchError('No Data Available. Please create new data.');
+                if (isMounted) {
+                    if (axios.isCancel(error)) {
+                        console.log('Request canceled:', error.message);
+                        // Do not set fetchError if the request was canceled
+                    } else {
+                        console.error('Error fetching early life data:', error);
+                        dispatch({
+                            type: 'SET_FIELD',
+                            field: 'fetchError',
+                            value: 'No Data Available. Please create new data.',
+                        });
+                    }
+                }
             } finally {
-                setIsLoading(false);
+                if (isMounted) {
+                    dispatch({ type: 'SET_FIELD', field: 'isLoading', value: false });
+                }
             }
         };
 
         fetchData();
 
-        // Remove the cleanup function
-        // return () => {
-        //   controller.abort();
-        // };
+        return () => {
+            isMounted = false;
+            controller.abort();
+        };
     }, []);
+
+
 
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const value = e.target.value;
-        setTitle(value);
-        setTitleError(validateField('title', value));
+        dispatch({ type: 'SET_FIELD', field: 'title', value });
+        const errors = validateForm({ title: value });
+        dispatch({ type: 'SET_ERROR', field: 'title', value: errors.title || '' });
     };
 
     const handleContentChange = (value: string | undefined): void => {
         const contentValue = value || '';
-        setContent(contentValue);
-        setContentError(validateField('content', contentValue));
+        dispatch({ type: 'SET_FIELD', field: 'content', value: contentValue });
+        const errors = validateForm({ content: contentValue });
+        dispatch({ type: 'SET_ERROR', field: 'content', value: errors.content || '' });
     };
 
     const toggleColorMode = (): void => {
-        setColorMode((prevMode) => (prevMode === 'dark' ? 'light' : 'dark'));
+        dispatch({
+            type: 'SET_FIELD',
+            field: 'colorMode',
+            value: colorMode === 'dark' ? 'light' : 'dark',
+        });
     };
 
     // Debounced function to validate image loading
     const debouncedValidateImage = useCallback(
         debounce((url: string) => {
-            if (validateField('image', url) === '') {
+            const errors = validateForm({ image: url });
+            if (!errors.image) {
                 const img = new Image();
-                img.onload = () => setImageError('');
-                img.onerror = () => setImageError('Failed to load image.');
+                img.onload = () => dispatch({ type: 'SET_ERROR', field: 'image', value: '' });
+                img.onerror = () => dispatch({ type: 'SET_ERROR', field: 'image', value: 'Failed to load image.' });
                 img.src = url;
             }
         }, 500),
-        []
+        [],
     );
 
-    const handleUseImageUrlChange = (checked: boolean) => {
-        setUseImageUrl(checked);
+    const handleUseImageUrlChange = (useUrl: boolean) => {
+        dispatch({ type: 'SET_FIELD', field: 'useImageUrl', value: useUrl });
 
-        if (checked) {
+        if (useUrl) {
             // Reset image file-related state
-            setImageFile(null);
-            setImagePreviewUrl('');
+            dispatch({ type: 'SET_FIELD', field: 'imageFile', value: null });
+            dispatch({ type: 'SET_FIELD', field: 'imagePreviewUrl', value: '' });
         } else {
             // Reset image URL-related state
-            setImageUrl('');
+            dispatch({ type: 'SET_FIELD', field: 'imageUrl', value: '' });
         }
     };
 
+    const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+        const url = e.target.value;
+        dispatch({ type: 'SET_FIELD', field: 'imageUrl', value: url });
+        const errors = validateForm({ image: url });
+        dispatch({ type: 'SET_ERROR', field: 'image', value: errors.image || '' });
+        debouncedValidateImage(url);
+    };
+
+
+
     const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const file = e.target.files?.[0] || null;
-        setImageFile(file);
-        setImageError('');
+        dispatch({ type: 'SET_FIELD', field: 'imageFile', value: file });
+        dispatch({ type: 'SET_ERROR', field: 'image', value: '' });
 
         if (file) {
             // Revoke the previous object URL if it exists
@@ -164,18 +293,16 @@ function EditEarlyLifePage() {
 
             const previewUrl = URL.createObjectURL(file);
             previewUrlRef.current = previewUrl;
-            setImagePreviewUrl(previewUrl);
+            dispatch({ type: 'SET_FIELD', field: 'imagePreviewUrl', value: previewUrl });
         } else {
             // Revoke the previous object URL if it exists
             if (previewUrlRef.current) {
                 URL.revokeObjectURL(previewUrlRef.current);
                 previewUrlRef.current = null;
             }
-            setImagePreviewUrl('');
+            dispatch({ type: 'SET_FIELD', field: 'imagePreviewUrl', value: '' });
         }
     };
-
-
 
     // Cleanup debounce on unmount
     useEffect(() => {
@@ -184,61 +311,49 @@ function EditEarlyLifePage() {
         };
     }, [debouncedValidateImage]);
 
-
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
 
         // Prepare fields for validation
         const fields: Partial<BaseEarlyLifeData> = {
-            title,
-            content,
+            title: state.title,
+            content: state.content,
+            image: state.useImageUrl ? state.imageUrl : undefined,
+            imageData: state.useImageUrl ? undefined : state.imageFile ? true : undefined,
         };
 
-        if (useImageUrl) {
-            fields.image = imageUrl;
-        } else if (imageFile) {
-            fields.imageData = true; // Indicate that an image file has been provided
-        } else {
-            setImageError('Please provide an image.');
-            return;
-        }
-
-        // Validate the data using the updated schema
-        try {
-            earlyLifeSchema.parse(fields);
-            setTitleError('');
-            setImageError('');
-            setContentError('');
-            setFormError('');
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                const fieldErrors = error.flatten().fieldErrors;
-                setTitleError(fieldErrors.title ? fieldErrors.title[0] : '');
-                setImageError(fieldErrors.image ? fieldErrors.image[0] : '');
-                setContentError(fieldErrors.content ? fieldErrors.content[0] : '');
-                return; // Prevent form submission if validation fails
+        // Validate the data using the unified validation function
+        const errors = validateForm(fields);
+        if (Object.keys(errors).length > 0) {
+            // Update errors in state
+            for (const key in errors) {
+                dispatch({ type: 'SET_ERROR', field: key as keyof FormState['errors'], value: errors[key] });
             }
+            return; // Prevent form submission if validation fails
+        } else {
+            // Clear errors
+            dispatch({ type: 'SET_STATE', payload: { errors: initialState.errors } });
         }
 
         // Create FormData
         const formData = new FormData();
-        formData.append('title', title);
-        formData.append('content', content);
+        formData.append('title', state.title);
+        formData.append('content', state.content);
 
-        if (useImageUrl) {
-            formData.append('image', imageUrl);
-        } else if (imageFile) {
-            formData.append('image', imageFile);
+        if (state.useImageUrl) {
+            formData.append('image', state.imageUrl);
+        } else if (state.imageFile) {
+            formData.append('image', state.imageFile);
         } else {
-            setImageError('Please provide an image.');
+            dispatch({ type: 'SET_ERROR', field: 'image', value: 'Please provide an image.' });
             return;
         }
 
         // Proceed with form submission
         try {
-            setIsSubmitting(true);
+            dispatch({ type: 'SET_FIELD', field: 'isSubmitting', value: true });
             let response;
-            if (isEditing) {
+            if (state.isEditing) {
                 response = await axios.patch('/api/story/early-life', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
@@ -252,20 +367,19 @@ function EditEarlyLifePage() {
                 router.push('/story');
             } else {
                 console.error('Server Error:', response.data);
-                setFormError('An error occurred while saving data.');
+                dispatch({ type: 'SET_ERROR', field: 'form', value: 'An error occurred while saving data.' });
             }
         } catch (error) {
             console.error('Error:', error);
-            setFormError('An unexpected error occurred. Please try again.');
+            dispatch({ type: 'SET_ERROR', field: 'form', value: 'An unexpected error occurred. Please try again.' });
         } finally {
-            setIsSubmitting(false);
+            dispatch({ type: 'SET_FIELD', field: 'isSubmitting', value: false });
         }
     };
 
-
     // Handler for the Cancel button
     const handleCancel = (): void => {
-        router.back(); // Navigate back to the previous page
+        router.back();
     };
 
     useEffect(() => {
@@ -276,13 +390,6 @@ function EditEarlyLifePage() {
             }
         };
     }, []);
-
-    const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        const url = e.target.value;
-        setImageUrl(url);
-        setImageError(validateField('image', url));
-        debouncedValidateImage(url);
-    };
 
 
     return (
@@ -313,7 +420,7 @@ function EditEarlyLifePage() {
                         className="text-gray-200 max-w-2xl"
                         style={{ textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)' }}
                     >
-                        Update the content of the Early Life section to provide insightful information about Coach Chuy Vera's background.
+                        Update the content of the Early Life section to provide insightful information about Coach Chuy Vera&#39;s background.
                     </Text>
                 </Box>
 
@@ -346,27 +453,37 @@ function EditEarlyLifePage() {
 
                                 />
 
-                                {titleError && (
+                                {errors.title && (
                                     <Text as="p" className="text-red-500 mb-2">
-                                        {titleError}
+                                        {errors.title}
                                     </Text>
                                 )}
                             </Box>
 
-                            {/* Image Source Selection */}
                             <Box>
-                                <Flex align="center" mb="4">
-                                    <Text as="span" mr="2">
-                                        Use Image URL
-                                    </Text>
-                                    <Switch
-                                        checked={useImageUrl}
-                                        onCheckedChange={handleUseImageUrlChange}
-                                    />
-                                    <Text as="span" ml="2">
-                                        Upload Image
-                                    </Text>
-                                </Flex>
+                                <Heading as="h1" size="4" className="font-bold text-primary mb-4">
+                                    Select Image Source
+                                </Heading>
+                                <RadioGroup.Root
+                                    defaultValue={useImageUrl ? 'url' : 'upload'}
+                                    onValueChange={(value) => handleUseImageUrlChange(value === 'url')}
+                                    aria-label="Image Source"
+                                >
+                                    <Flex direction="row" gap="4">
+                                        <Flex align="center">
+                                            <RadioGroup.Item value="url" id="image-url-option" />
+                                            <label htmlFor="image-url-option" className="ml-2 text-gray-200">
+                                                Use Image URL
+                                            </label>
+                                        </Flex>
+                                        <Flex align="center">
+                                            <RadioGroup.Item value="upload" id="image-upload-option" />
+                                            <label htmlFor="image-upload-option" className="ml-2 text-gray-200">
+                                                Upload Image
+                                            </label>
+                                        </Flex>
+                                    </Flex>
+                                </RadioGroup.Root>
                             </Box>
 
                             {/* Conditionally render image input fields */}
@@ -387,9 +504,9 @@ function EditEarlyLifePage() {
                                         }`}
 
                                     />
-                                    {imageError && (
+                                    {errors.image && (
                                         <Text as="p" className="text-red-500 mb-2">
-                                            {imageError}
+                                            {errors.image}
                                         </Text>
                                     )}
                                 </Box>
@@ -398,15 +515,19 @@ function EditEarlyLifePage() {
                                     <Heading as="h1" size="4" className="font-bold text-primary mb-4">
                                         Upload Image
                                     </Heading>
+                                    <label htmlFor="imageFile" className="block text-sm font-medium text-gray-200">
+                                        Choose an image to upload
+                                    </label>
                                     <input
+                                        id="imageFile"
                                         type="file"
                                         accept="image/*"
                                         onChange={handleImageFileChange}
                                         className="mt-1 block w-full text-white"
                                     />
-                                    {imageError && (
+                                    {errors.image && (
                                         <Text as="p" className="text-red-500 mb-2">
-                                            {imageError}
+                                            {errors.image}
                                         </Text>
                                     )}
                                 </Box>
@@ -414,7 +535,7 @@ function EditEarlyLifePage() {
 
                             {/* Image Preview */}
                             <Box className="mt-4">
-                                <RenderImagePreview imageUrl={imageUrl} imageError={imageError} imagePreviewUrl={imagePreviewUrl} />
+                                <RenderImagePreview imageUrl={imageUrl} imageError={errors.image} imagePreviewUrl={imagePreviewUrl} />
                             </Box>
 
                             {/* Content Field */}
@@ -445,9 +566,9 @@ function EditEarlyLifePage() {
                                     onChange={handleContentChange}
                                     colorMode={colorMode}
                                 />
-                                {contentError && (
+                                {errors.content && (
                                     <Text as="p" className="text-red-500 mb-2">
-                                        {contentError}
+                                        {errors.content}
                                     </Text>
                                 )}
                             </Box>
