@@ -5,8 +5,8 @@ import { Box, Text } from "@radix-ui/themes";
 import React from "react";
 
 interface ImagePreviewProps {
-    imageUrl?: string;
-    imageError: string | null;
+    imageUrl?: string ;
+    imageError?: string | null;
     imagePreviewUrl?: string; // Optional prop for pre-rendering images
 }
 
@@ -53,3 +53,4 @@ const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError,
 };
 
 export default RenderImagePreview;
+
