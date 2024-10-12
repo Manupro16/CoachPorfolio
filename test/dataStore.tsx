@@ -1,6 +1,6 @@
 import {AlertDialog, Box, Button, Flex, Heading, Switch, Text, TextField} from "@radix-ui/themes";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
-import RenderImagePreview from "@/app/story/edit/earlyLife/ImagePreview";
+import RenderImagePreview from "@/app/story/edit/ImagePreview";
 import React from "react";
 
 return (

@@ -174,19 +174,26 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
         const controller = new AbortController();
 
         const fetchData = async () => {
-            dispatch({type: 'SET_LOADING', value: true});
+            dispatch({ type: 'SET_LOADING', value: true });
             try {
                 const response: AxiosResponse<T> = await axios.get(fetchUrl, {
                     signal: controller.signal,
                 });
 
                 if (isMounted && response.status === 200 && response.data) {
-                    dispatch({type: 'RESET_FORM', initialData: response.data});
+                    console.log('Fetched Data:', response.data); // Debugging line
+                    dispatch({ type: 'RESET_FORM', initialData: response.data });
 
                     if (response.data.imageUrl) {
                         dispatch({
                             type: 'SET_IMAGE_PREVIEW_URL',
                             url: response.data.imageUrl,
+                        });
+                    } else {
+                        // If imageUrl is absent, set imagePreviewUrl to the image endpoint
+                        dispatch({
+                            type: 'SET_IMAGE_PREVIEW_URL',
+                            url: '/api/story/early-life/image',
                         });
                     }
                 }
@@ -204,7 +211,7 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                 }
             } finally {
                 if (isMounted) {
-                    dispatch({type: 'SET_LOADING', value: false});
+                    dispatch({ type: 'SET_LOADING', value: false });
                 }
             }
         };
