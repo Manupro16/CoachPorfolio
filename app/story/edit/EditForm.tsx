@@ -22,7 +22,7 @@ interface EditFormProps<T extends { imageUrl?: string; content: string; title: s
 }
 
 interface FormState<T extends { imageUrl?: string; content: string; title: string }> {
-    data: T; // Holds the form data
+    data: T  ; // Holds the form data
     errors: Partial<Record<keyof T | 'image', string>>; // Field-specific and general errors
     isSubmitting: boolean;
     isLoading: boolean;
@@ -114,7 +114,7 @@ function getInitialState<T extends { imageUrl?: string; content: string; title: 
         data: initialData,
         errors: {},
         isSubmitting: false,
-        isLoading: false,
+        isLoading: true,
         useImageUrl: Boolean(initialData.imageUrl),
         imageFile: null,
         imagePreviewUrl: initialData.imageUrl || '',
@@ -409,7 +409,7 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
     return (
         <>
             {/* Form Container */}
-            {isLoading ? (
+            {isLoading || !data ? (
                 <LoadingSkeleton/>
             ) : (
                 <Box className="shadow-md rounded-lg p-8 w-full max-w-3xl bg-gray-900">
