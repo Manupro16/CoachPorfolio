@@ -41,6 +41,7 @@ interface FormState {
 // Define Actions type
 type Actions =
     | { type: 'SET_FIELD'; field: keyof CareerModel; value: CareerModel[keyof CareerModel] }
+    | { type: 'SET_IMAGE_PREVIEW_URL'; value: string } // Add this line
     | { type: 'SET_ERROR'; field: keyof FormErrors; value: string }
     | { type: 'TOGGLE_EDIT_MODE'; value: boolean }
     | { type: 'SET_API_RESPONSE'; value: Partial<AxiosResponse> }
@@ -79,6 +80,12 @@ const formReducer = (state: FormState, action: Actions): FormState => {
             return {
                 ...state,
                 useImageUrl: action.value,
+            };
+
+        case 'SET_IMAGE_PREVIEW_URL': // Handle image preview URL
+            return {
+                ...state,
+                imagePreviewUrl: action.value,
             };
 
         case 'TOGGLE_EDIT_MODE':
@@ -249,6 +256,28 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
         dispatch({ type: 'SET_FIELD', field, value: e.target.value });
     };
 
+    // Handle image upload change with base64 preview
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const arrayBuffer = reader.result as ArrayBuffer;
+                const buffer = Buffer.from(arrayBuffer);
+                const imagePreviewUrl = reader.result as string; // Base64 preview
+                dispatch({ type: 'SET_FIELD', field: 'imageData', value: buffer });
+                dispatch({ type: 'SET_FIELD', field: 'imageType', value: file.type });
+                dispatch({ type: 'SET_IMAGE_PREVIEW_URL', value: imagePreviewUrl });
+            };
+            reader.readAsDataURL(file); // Use DataURL for preview
+        }
+    };
+
+    // Handle content change in DynamicReactMDEditor
+    const handleContentChange = (value: string | undefined) => {
+        dispatch({ type: 'SET_FIELD', field: 'content', value: value || '' }); // Fallback to empty string if undefined
+    };
+
 
 
     return (
@@ -372,7 +401,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                                     id="imageFile"
                                     type="file"
                                     accept="image/*"
-                                    onChange={() => {}}
+                                    onChange={handleImageUpload}
                                     className="mt-1 block w-full text-white"
                                 />
                                 {errors.image && (
@@ -406,7 +435,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                                     <Switch
                                         id="color-mode-switch"
                                         checked={colorMode === 'dark'}
-                                        onCheckedChange={handleColorModeChange}
+                                        onChange={handleColorModeChange}
                                         className="items-center"
                                     />
                                     <Text as="span" className="ml-2 text-primary">
@@ -417,7 +446,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                             {/* Markdown Editor */}
                             <DynamicReactMDEditor
                                 value={Data.content || ''}
-                                onChange={() => {}}
+                                onChange={handleContentChange}
                                 colorMode={colorMode}
                             />
                             {errors.content && (
