@@ -4,22 +4,17 @@
 
 import React from "react";
 import { Box, Flex, Heading, Text } from "@radix-ui/themes";
-import { useRouter } from 'next/navigation';
-import { earlyLifeSchema, BaseEarlyLifeData } from '@/lib/validation/story/earlyLife';
+import { earlyLifeCreateSchema, earlyLifeEditSchema  } from '@/lib/validation/story/earlyLife';
 import EditFormPage from '../EditForm'; // Adjust the path as necessary
 
 
 function EditEarlyLifePage() {
-    const router = useRouter();
+
 
     // Define the fetch and submit URLs
     const fetchUrl = '/api/story/early-life'; // Adjust as necessary
-    const submitUrl = '/api/story/early-life'; // Adjust as necessary
+    const imageEndpoint = '/api/story/early-life/image'; // Adjust as necessary
 
-    // Define the onSuccess callback
-    const handleSuccess = () => {
-        router.push('/story'); // Navigate to the story page upon successful submission
-    };
 
     return (
         <section className="w-screen h-auto relative">
@@ -54,11 +49,12 @@ function EditEarlyLifePage() {
                 </Box>
 
                 {/* Form Container */}
-                <EditFormPage<BaseEarlyLifeData>
-                    validationSchema={earlyLifeSchema}
-                    fetchUrl={fetchUrl}
-                    submitUrl={submitUrl}
-                    onSuccess={handleSuccess}
+                <EditFormPage
+                    createValidationSchema={earlyLifeCreateSchema}
+                    editValidationSchema={earlyLifeEditSchema}
+                    APIEndpoint={fetchUrl}
+                    APIEndpointImage={imageEndpoint}
+                    TeamId={undefined}  // Not needed since Early Life is a singleton entry
                 />
             </Flex>
         </section>

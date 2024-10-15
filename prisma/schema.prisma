@@ -9,27 +9,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ImageSource {
+  URL
+  UPLOAD
+}
+
+// schema.prisma
+
 model EarlyLife {
-  id        Int     @id @default(autoincrement())
-  image     String? // URL of the image
-  imageData Bytes? // Binary data of the image
-  imageType String? // MIME type of the image
-  title     String
-  content   String
+  id          Int         @id @default(autoincrement())
+  imageSource ImageSource
+  image       String? // URL of the image if imageSource is 'URL'
+  imageData   Bytes? // Binary data of the image if imageSource is 'UPLOAD'
+  imageType   String? // MIME type of the image if imageSource is 'UPLOAD'
+  title       String
+  content     String
+  date        String
 }
 
 model PlayerCareer {
-  id          Int    @id @default(autoincrement())
-  team        String
-  image       String
-  dates       String
-  description String
+  id          Int         @id @default(autoincrement())
+  imageSource ImageSource
+  image       String? // URL of the image if imageSource is 'URL'
+  imageData   Bytes? // Binary data of the image if imageSource is 'UPLOAD'
+  imageType   String? // MIME type of the image if imageSource is 'UPLOAD'
+  title       String
+  content     String
+  date        String
 }
 
 model CoachingCareer {
-  id          Int    @id @default(autoincrement())
-  team        String
-  image       String
-  dates       String
-  description String
+  id          Int         @id @default(autoincrement())
+  imageSource ImageSource
+  image       String? // URL of the image if imageSource is 'URL'
+  imageData   Bytes? // Binary data of the image if imageSource is 'UPLOAD'
+  imageType   String? // MIME type of the image if imageSource is 'UPLOAD'
+  title       String
+  content     String
+  date        String
 }

@@ -5,6 +5,7 @@ import '@radix-ui/themes/styles.css';
 import { Theme } from '@radix-ui/themes';
 import NavBar from "@/app/NavBar";
 import FooterSection from "@/app/FooterSection";
+import React from "react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

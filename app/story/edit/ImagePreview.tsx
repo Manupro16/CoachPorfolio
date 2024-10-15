@@ -5,7 +5,7 @@ import { Box, Text } from "@radix-ui/themes";
 import React from "react";
 
 interface ImagePreviewProps {
-    imageUrl?: string ;
+    imageUrl?: string | null ;
     imageError?: string | null;
     imagePreviewUrl?: string; // Optional prop for pre-rendering images
 }
@@ -14,8 +14,8 @@ const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError,
 
     let previewUrl = '';
 
-    console.log('Image URL:', imageUrl);
-    console.log('Image Preview URL:', imagePreviewUrl);
+    // console.log('Image URL:', imageUrl);
+    // console.log('Image Preview URL:', imagePreviewUrl);
 
     if (imageUrl) {
         previewUrl = imageUrl;

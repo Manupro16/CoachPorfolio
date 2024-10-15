@@ -2,50 +2,44 @@
 
 import { z } from 'zod';
 
-// Define field schemas with consistent naming
-export const fieldSchemas = {
+// Define field schemas
+const fieldSchemas = {
     title: z.string().min(1, { message: 'Title cannot be empty' }),
     content: z.string().min(1, { message: 'Content cannot be empty' }),
-    imageUrl: z.string().url({ message: 'Invalid image URL' }).optional(), // Renamed from 'image' to 'imageUrl'
-    imageData: z.boolean().optional(), // Indicates if an image file is provided
+    date: z.string().min(1, { message: 'Date cannot be empty' }), // Add validation for the date
+    imageUrl: z.string().url({ message: 'Invalid image URL' }).optional(),
+    imageFile: z.instanceof(File, { message: 'Invalid image file' }).optional(),
 };
 
-// Base schema without refinement
-export const baseEarlyLifeSchema = z.object(fieldSchemas);
+// Base schema
+const baseEarlyLifeSchema = z.object(fieldSchemas);
 
-export type BaseEarlyLifeData = z.infer<typeof baseEarlyLifeSchema>;
-
-// Refined schema with transformations
-export const earlyLifeSchema = baseEarlyLifeSchema
+// Create Schema
+export const earlyLifeCreateSchema = baseEarlyLifeSchema
     .refine(
-        (data) => data.imageUrl || data.imageData,
+        (data) => data.imageUrl || data.imageFile,
         {
-            message: 'Either image URL or image file must be provided',
-            path: ['imageUrl'], // Updated path
+            message: 'Either provide an image URL or upload an image.',
+            path: ['imageUrl'], // You can set this to ['image'] if preferred
         }
     )
     .transform((data) => {
-        // Remove imageData from the final parsed data
+        // Remove imageFile from the final parsed data if it exists
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { imageData, ...rest } = data;
+        const { imageFile, ...rest } = data;
         return rest;
     });
 
-export type EarlyLifeData = z.infer<typeof earlyLifeSchema>;
+export type EarlyLifeCreateData = z.infer<typeof earlyLifeCreateSchema>;
 
-// For PATCH requests, allow partial updates
-export const earlyLifeUpdateSchema = baseEarlyLifeSchema
-    .partial()
-    .refine(
-        (data) => data.imageUrl || data.imageData,
-        {
-            message: 'Either image URL or image file must be provided',
-            path: ['imageUrl'], // Updated path
-        }
-    )
+// Edit Schema
+export const earlyLifeEditSchema = baseEarlyLifeSchema
+    .partial() // Make all fields optional for the edit schema
     .transform((data) => {
-        // Remove imageData from the final parsed data
+        // Remove imageFile from the final parsed data if it exists
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { imageData, ...rest } = data;
+        const { imageFile, ...rest } = data;
         return rest;
     });
+
+export type EarlyLifeEditData = z.infer<typeof earlyLifeEditSchema>;

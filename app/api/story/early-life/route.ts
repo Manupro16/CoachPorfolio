@@ -2,18 +2,15 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import {earlyLifeSchema, earlyLifeUpdateSchema} from "@/lib/validation/story";
-import {Prisma} from "@prisma/client"; // Adjust the import path based on your project structure
+import { earlyLifeCreateSchema, earlyLifeEditSchema } from "@/lib/validation/story/earlyLife";
+import { Prisma } from "@prisma/client";
 
-
-// Disable Next.js's default body parsing
+// Disable Next.js default body parsing
 export const config = {
     api: {
         bodyParser: false,
     },
 };
-
-
 
 export async function GET() {
     try {
@@ -22,7 +19,7 @@ export async function GET() {
         });
 
         if (!earlyLife) {
-            return NextResponse.json({ message: 'EarlyLife entry not found' }, { status: 404 });
+            return new NextResponse(null, { status: 204 });
         }
 
         return NextResponse.json(earlyLife, { status: 200 });
@@ -34,7 +31,6 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        // Check if the EarlyLife entry already exists
         const existingEntry = await prisma.earlyLife.findUnique({ where: { id: 1 } });
         if (existingEntry) {
             return NextResponse.json(
@@ -43,40 +39,35 @@ export async function POST(request: Request) {
             );
         }
 
-        // Parse form data using request.formData()
         const formData = await request.formData();
-
         const title = formData.get('title')?.toString() || '';
         const content = formData.get('content')?.toString() || '';
+        const date = formData.get('date')?.toString() || ''; // Capture date from form data
+        const imageSource = formData.get('imageSource')?.toString() as 'URL' | 'UPLOAD';
         const imageField = formData.get('image') || null;
 
         let imageData: Buffer | null = null;
         let imageType: string | null = null;
         let imageUrl: string | null = null;
-        let imageDataIndicator = false;
 
-        if (imageField instanceof File) {
-            // Handle file upload
+        if (imageSource === 'UPLOAD' && imageField instanceof File) {
             const arrayBuffer = await imageField.arrayBuffer();
             imageData = Buffer.from(arrayBuffer);
             imageType = imageField.type;
-            imageDataIndicator = true;
-        } else if (typeof imageField === 'string') {
-            // Handle image URL
+        } else if (imageSource === 'URL' && typeof imageField === 'string') {
             imageUrl = imageField;
         }
 
-        // Prepare fields for validation
+        // Validate the data
         const fields = {
             title,
             content,
-            image: imageUrl,
-            imageData: imageDataIndicator ? true : undefined,
+            date, // Include date in validation
+            imageUrl: imageUrl ?? undefined,
+            imageFile: imageData ? new File([], "") : null, // Mock empty file for validation
         };
 
-        // Validate the data using the updated schema
-        const parseResult = earlyLifeSchema.safeParse(fields);
-
+        const parseResult = earlyLifeCreateSchema.safeParse(fields);
         if (!parseResult.success) {
             const errors = parseResult.error.flatten().fieldErrors;
             return NextResponse.json({ errors }, { status: 400 });
@@ -84,11 +75,14 @@ export async function POST(request: Request) {
 
         const data = parseResult.data;
 
+        // Prepare Prisma data
         const prismaData: Prisma.EarlyLifeCreateInput = {
             title: data.title,
             content: data.content,
+            date: date, // Save the date
+            imageSource: imageSource ?? 'URL',
             image: imageUrl ?? null,
-            imageData,
+            imageData: imageData ?? undefined,
             imageType,
         };
 
@@ -103,45 +97,43 @@ export async function POST(request: Request) {
     }
 }
 
+
 export async function PATCH(request: Request) {
+    const id = 1; // Static ID since we're dealing with a single entry
+
     try {
         const formData = await request.formData();
-
         let title = formData.get('title')?.toString();
         let content = formData.get('content')?.toString();
+        let date = formData.get('date')?.toString(); // Capture date from form data
+        const imageSource = formData.get('imageSource')?.toString() as 'URL' | 'UPLOAD';
         const imageField = formData.get('image') || null;
 
         let imageData: Buffer | null = null;
         let imageType: string | null = null;
         let imageUrl: string | null = null;
-        let imageDataIndicator = false;
 
-        if (imageField instanceof File) {
-            // Handle file upload
+        if (imageSource === 'UPLOAD' && imageField instanceof File) {
             const arrayBuffer = await imageField.arrayBuffer();
             imageData = Buffer.from(arrayBuffer);
             imageType = imageField.type;
-            imageDataIndicator = true;
-        } else if (typeof imageField === 'string') {
-            // Handle image URL
+        } else if (imageSource === 'URL' && typeof imageField === 'string') {
             imageUrl = imageField;
         }
 
-        // Set title and content to undefined if they are empty strings
         if (title === '') title = undefined;
         if (content === '') content = undefined;
+        if (date === '') date = undefined; // Handle empty date as undefined
 
-        // Prepare fields for validation
         const fields = {
             title,
             content,
-            image: imageUrl ?? undefined, // Convert null to undefined
-            imageData: imageDataIndicator ? true : undefined,
+            date, // Include date in validation
+            imageUrl: imageUrl ?? undefined,
+            imageFile: imageData ? new File([], "") : null, // Mock empty file for validation
         };
 
-        // Validate the data using the updated schema
-        const parseResult = earlyLifeUpdateSchema.safeParse(fields);
-
+        const parseResult = earlyLifeEditSchema.safeParse(fields);
         if (!parseResult.success) {
             const errors = parseResult.error.flatten().fieldErrors;
             console.error('Validation Errors:', errors);
@@ -151,15 +143,17 @@ export async function PATCH(request: Request) {
         const data = parseResult.data;
 
         const updateData: Prisma.EarlyLifeUpdateInput = {
-            title: data.title,
-            content: data.content,
-            image: imageUrl,
-            imageData: imageData,
-            imageType: imageType,
+            title: data.title ?? undefined,
+            content: data.content ?? undefined,
+            date: date ?? undefined, // Save the updated date
+            imageSource: imageSource ?? undefined,
+            image: imageUrl ?? undefined,
+            imageData: imageData ?? undefined,
+            imageType: imageType ?? undefined,
         };
 
         const updatedEarlyLife = await prisma.earlyLife.update({
-            where: { id: 1 },
+            where: { id },
             data: updateData,
         });
 
@@ -169,7 +163,6 @@ export async function PATCH(request: Request) {
 
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
             if (error.code === 'P2025') {
-                // Record not found
                 return NextResponse.json({ message: 'EarlyLife entry not found' }, { status: 404 });
             }
         }
@@ -177,8 +170,5 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
-
-
-
 
 

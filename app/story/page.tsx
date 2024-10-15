@@ -21,10 +21,10 @@ async function StoryPage() {
     // Determine the image source for EarlyLifeSection
     let imageSrc = '';
     if (earlyLife) {
-        if (earlyLife.image) {
-            imageSrc = earlyLife.image;
-        } else if (earlyLife.imageData) {
-            imageSrc = '/api/story/early-life/image';
+        if (earlyLife.imageSource === 'URL' && earlyLife.image) {
+            imageSrc = earlyLife.image;  // Use image URL from the database
+        } else if (earlyLife.imageSource === 'UPLOAD' && earlyLife.imageData) {
+            imageSrc = '/api/story/early-life/image';  // Use API endpoint for uploaded image
         }
     }
 
@@ -55,12 +55,21 @@ async function StoryPage() {
             {/* Main Content */}
             <Grid as="div" columns="1fr" rows="auto">
                 <IntroductionSection playerStatus="Retired" coachStatus="Active"/>
-                {earlyLife ? <EarlyLifeSection
-                    imageSrc={imageSrc}
-                    imageAlt="Early Life"
-                    title={earlyLife.title}
-                    content={earlyLife.content}
-                /> : <NoDataWarning ChildrenComponentName="earlyLife"/>}
+
+                {/* EarlyLife Section */}
+                {earlyLife ? (
+                    <EarlyLifeSection
+                        imageSrc={imageSrc}
+                        imageAlt="Early Life"
+                        title={earlyLife.title}
+                        content={earlyLife.content}
+                    />
+                ) : (
+                    <NoDataWarning ChildrenComponentName="earlyLife"/>
+                )}
+
+
+                {/* Player Career Section */}
                 {playerCareers.length > 0 ? (
                     <CareerSection
                         title="Playing Career"
@@ -68,15 +77,19 @@ async function StoryPage() {
                         ObjectPosition="top"
                         subtitle="Discover the journey of Coach Vera as a professional soccer player."
                         teams={playerCareers.map((career) => ({
-                            name: career.team,
+                            name: career.title,
                             image: career.image,
-                            dates: career.dates,
-                            description: career.description,
+                            imageSource: career.imageSource,
+                            dates: career.date,
+                            description: career.content,
                         }))}
                     />
                 ) : (
                     <NoDataWarning ChildrenComponentName="PlayerCareer" />
                 )}
+
+
+                {/* Coaching Career Section */}
                 {coachingCareers.length > 0 ? (
                     <CareerSection
                         title="Coaching Career"
@@ -84,15 +97,18 @@ async function StoryPage() {
                         headerImage="/pic/Chuy-Vera1.webp"
                         ObjectPosition="center"
                         teams={coachingCareers.map((career) => ({
-                            name: career.team,
+                            name: career.title,
                             image: career.image,
-                            dates: career.dates,
-                            description: career.description,
+                            imageSource: career.imageSource,
+                            dates: career.date,
+                            description: career.content,
                         }))}
                     />
                 ) : (
                     <NoDataWarning ChildrenComponentName="CoachingCareer" />
                 )}
+
+                {/* Closing Section */}
                 <ClosingSection
                     text="Coach Chuy Vera's dedication to soccer has left an indelible mark on the sport. His journey continues to inspire players and coaches around the world."
                 />
