@@ -256,48 +256,48 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
 
 
     const validateField = (formData: Partial<CareerModel>): Partial<Record<keyof CareerModel | 'image', string>> => {
+        const errors: Partial<Record<keyof CareerModel | 'image', string>> = {};
+
+        // Image validation first, before schema parsing
+        if (!editMode) { // Only validate image in create mode
+            if (useImageUrl && !formData.image) {
+                errors.image = 'Please provide a valid image URL.';
+            } else if (!useImageUrl && !formData.imageData) {
+                errors.image = 'Please upload an image.';
+            }
+        }
+
+        // Now proceed with Zod validation
         try {
             console.log("validation mode: " + editMode);
 
-            console.log("here1")
             // Choose schema based on mode
             const schema = editMode ? storyFieldEditSchema : storyFieldCreateSchema;
-            console.log("here2")
 
-            console.log(formData)
+            console.log("Form data before Zod validation:", formData);
 
-            // Validate the form data
+            // Validate the form data with Zod schema
             schema.parse(formData);
-            console.log("here3")
 
-            // If valid, return no errors
-            return {};
         } catch (error) {
             if (error instanceof ZodError) {
-                console.log('Validation error: ', error.flatten().fieldErrors);
-                const fieldErrors = error.flatten().fieldErrors;
-                const formattedErrors: Partial<Record<keyof CareerModel | 'image', string>> = {};
+                console.log('Validation error from Zod:', error.flatten().fieldErrors);
 
+                const fieldErrors = error.flatten().fieldErrors;
+
+                // Add Zod validation errors to the errors object
                 for (const key in fieldErrors) {
                     if (fieldErrors[key] && fieldErrors[key].length > 0) {
-                        formattedErrors[key as keyof CareerModel] = fieldErrors[key][0];
+                        errors[key as keyof CareerModel] = fieldErrors[key][0];
                     }
                 }
-
-                // Handle general image validation errors
-                if (fieldErrors['imageUrl']?.length && useImageUrl) {
-                    formattedErrors['image'] = fieldErrors['imageUrl'][0];
-                } else if (fieldErrors['imageFile']?.length && !useImageUrl) {
-                    formattedErrors['image'] = fieldErrors['imageFile'][0];
-                }
-
-
-                console.error('Validation error: ', formattedErrors);
-                return formattedErrors;
             }
-            return {};
         }
+
+        console.error('Final validation errors:', errors);
+        return errors;
     };
+
 
 
 
