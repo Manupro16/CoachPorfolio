@@ -47,6 +47,7 @@ type Actions =
     | { type: 'SET_SUBMITTING'; value: boolean }
     | { type: 'SET_LOADING'; value: boolean }
     | { type: 'SET_COLOR_MODE'; value: 'light' | 'dark' }
+    | { type: 'SET_IMAGE_SOURCE'; value: boolean }  // Handle Image source change
     | { type: 'RESET_FORM' };
 
 
@@ -72,6 +73,12 @@ const formReducer = (state: FormState, action: Actions): FormState => {
                     ...state.errors,
                     [action.field]: action.value, // Set error for specific field or global form error
                 },
+            };
+
+        case 'SET_IMAGE_SOURCE': // Handle image URL vs Upload toggle
+            return {
+                ...state,
+                useImageUrl: action.value,
             };
 
         case 'TOGGLE_EDIT_MODE':
@@ -226,6 +233,21 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
         fetchData()
     }, [APIEndpoint, APIEndpointImage, TeamId])
 
+    // Handle color mode switch
+    const handleColorModeChange = () => {
+        const newColorMode = colorMode === 'light' ? 'dark' : 'light';
+        dispatch({ type: 'SET_COLOR_MODE', value: newColorMode });
+    };
+
+    // Handle image source (URL/Upload) switch
+    const handleImageSourceChange = (value: string) => {
+        dispatch({ type: 'SET_IMAGE_SOURCE', value: value === 'url' });
+    };
+
+    // Handle input changes (title, content, date)
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof CareerModel) => {
+        dispatch({ type: 'SET_FIELD', field, value: e.target.value });
+    };
 
 
 
@@ -253,7 +275,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                                 type="text"
                                 placeholder="Enter title"
                                 value={Data.title}
-                                onChange={() => {}}
+                                onChange={(e) => handleInputChange(e, 'title')}
                                 className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                     colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                 }`}
@@ -277,7 +299,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                                 type="text"
                                 placeholder="Enter date"
                                 value={Data.date || ''}
-                                onChange={(e) => dispatch({ type: 'SET_FIELD', field: 'date', value: e.target.value })}
+                                onChange={(e) => handleInputChange(e, 'date')}
                                 className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                     colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                 }`}
@@ -296,7 +318,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                             </Heading>
                             <RadioGroup.Root
                                 value={useImageUrl ? 'url' : 'upload'}
-                                onValueChange={() => {}}
+                                onValueChange={handleImageSourceChange}
                                 aria-label="Image Source"
                                 className="flex flex-row gap-4"
                             >
@@ -327,7 +349,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                                     type="text"
                                     placeholder="Enter image URL"
                                     value={Data.image || ''}
-                                    onChange={() => {}}
+                                    onChange={(e) => {handleInputChange(e, 'image')}}
                                     className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                         colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                     }`}
@@ -384,7 +406,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                                     <Switch
                                         id="color-mode-switch"
                                         checked={colorMode === 'dark'}
-                                        onCheckedChange={() => {}}
+                                        onCheckedChange={handleColorModeChange}
                                         className="items-center"
                                     />
                                     <Text as="span" className="ml-2 text-primary">
