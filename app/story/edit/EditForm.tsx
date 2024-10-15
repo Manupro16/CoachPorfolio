@@ -5,9 +5,11 @@ import {AlertDialog, Box, Button, Flex, Heading, RadioGroup, Switch, Text, TextF
 import React, { useEffect, useReducer} from "react";
 import RenderImagePreview from "@/app/story/edit/ImagePreview";
 import dynamic from "next/dynamic";
-import { ZodSchema} from "zod";
 import axios, {AxiosResponse} from "axios";
 import {CoachingCareer, EarlyLife, PlayerCareer} from "@prisma/client";
+import { storyFieldCreateSchema, storyFieldEditSchema } from "@/lib/validation/story/sroryValidation"
+import {ZodError} from "zod";
+
 
  // Adjust the import path as necessary
 
@@ -168,26 +170,30 @@ const initialState: FormState = {
 
 
 // Define Form Props
-interface EditFormProps<T> {
-    createValidationSchema: ZodSchema<T>;
-    editValidationSchema?: ZodSchema<T>;
+interface EditFormProps {
     APIEndpoint: string;
     APIEndpointImage: string;
-    AdditionalFields?: Partial<T>[];
     TeamId? : number
 }
 
 
-function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndpoint, APIEndpointImage, AdditionalFields, TeamId }: EditFormProps<T>) {
+
+function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) {
 
     const [state, dispatch] = useReducer(formReducer, initialState);
     const { Data, errors, isSubmitting, isLoading, editMode, ApiResponse, colorMode, useImageUrl, imagePreviewUrl } = state;
 
-    // Log whenever isLoading changes
-    useEffect(() => {
-        console.log('isLoading status changed:', isLoading);
-    }, [isLoading]);
 
+
+
+    // Log the current mode (edit or create)
+    useEffect(() => {
+        if (editMode) {
+            console.log("Mode: Edit");
+        } else {
+            console.log("Mode: Create");
+        }
+    }, [editMode]);
 
 
     useEffect(() => {
@@ -206,9 +212,14 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                 const fetchedData = response.data
 
                 if (response.status!== 204 || !fetchedData) {
+                    // No data available -> Create mode
+                    dispatch({ type: 'TOGGLE_EDIT_MODE', value: false });
                     dispatch({ type: 'SET_ERROR', field: 'form', value: 'No data available. Please create the entry.' });
                     dispatch({ type: 'SET_LOADING', value: false });
                     return;
+                } else {
+                    // Data available -> Edit mode
+                    dispatch({ type: 'TOGGLE_EDIT_MODE', value: true });
                 }
 
                 dispatch({ type: 'SET_FIELD', field: 'title', value: fetchedData.title ?? '' });
@@ -231,6 +242,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                 dispatch({ type: 'SET_LOADING', value: false });
 
             } catch (error) {
+                dispatch({ type: 'TOGGLE_EDIT_MODE', value: false });
                 console.error('Error fetching data: ', error);
                 dispatch({ type: 'SET_ERROR', field: 'form', value: 'Failed to fetch data. Please try again later.' });
                 dispatch({ type: 'SET_LOADING', value: false });
@@ -240,23 +252,75 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
         fetchData()
     }, [APIEndpoint, APIEndpointImage, TeamId])
 
-    // Handle color mode switch
-    const handleColorModeChange = () => {
-        const newColorMode = colorMode === 'light' ? 'dark' : 'light';
-        dispatch({ type: 'SET_COLOR_MODE', value: newColorMode });
+
+
+
+    const validateField = (formData: Partial<CareerModel>): Partial<Record<keyof CareerModel | 'image', string>> => {
+        try {
+            console.log("validation mode: " + editMode);
+
+            console.log("here1")
+            // Choose schema based on mode
+            const schema = editMode ? storyFieldEditSchema : storyFieldCreateSchema;
+            console.log("here2")
+
+            console.log(formData)
+
+            // Validate the form data
+            schema.parse(formData);
+            console.log("here3")
+
+            // If valid, return no errors
+            return {};
+        } catch (error) {
+            if (error instanceof ZodError) {
+                console.log('Validation error: ', error.flatten().fieldErrors);
+                const fieldErrors = error.flatten().fieldErrors;
+                const formattedErrors: Partial<Record<keyof CareerModel | 'image', string>> = {};
+
+                for (const key in fieldErrors) {
+                    if (fieldErrors[key] && fieldErrors[key].length > 0) {
+                        formattedErrors[key as keyof CareerModel] = fieldErrors[key][0];
+                    }
+                }
+
+                // Handle general image validation errors
+                if (fieldErrors['imageUrl']?.length && useImageUrl) {
+                    formattedErrors['image'] = fieldErrors['imageUrl'][0];
+                } else if (fieldErrors['imageFile']?.length && !useImageUrl) {
+                    formattedErrors['image'] = fieldErrors['imageFile'][0];
+                }
+
+
+                console.error('Validation error: ', formattedErrors);
+                return formattedErrors;
+            }
+            return {};
+        }
     };
 
-    // Handle image source (URL/Upload) switch
-    const handleImageSourceChange = (value: string) => {
-        dispatch({ type: 'SET_IMAGE_SOURCE', value: value === 'url' });
+
+
+
+    const handleFieldChange =  (field: keyof CareerModel, value: CareerModel[keyof CareerModel]) => {
+        dispatch({ type: 'SET_FIELD', field, value });
+
+        // Validate the field after updating it
+        const formData: Partial<CareerModel> = { ...state.Data, [field]: value };
+
+        const errors = validateField(formData);
+
+        // Update error state if there are any errors
+        if (errors && errors[field]) {
+            dispatch({ type: 'SET_ERROR', field, value: errors[field] });
+        } else {
+            // Clear the error for the field if validation passes
+            dispatch({ type: 'SET_ERROR', field, value: '' });
+        }
+
+
     };
 
-    // Handle input changes (title, content, date)
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof CareerModel) => {
-        dispatch({ type: 'SET_FIELD', field, value: e.target.value });
-    };
-
-    // Handle image upload change with base64 preview
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -265,19 +329,27 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                 const arrayBuffer = reader.result as ArrayBuffer;
                 const buffer = Buffer.from(arrayBuffer);
                 const imagePreviewUrl = reader.result as string; // Base64 preview
-                dispatch({ type: 'SET_FIELD', field: 'imageData', value: buffer });
-                dispatch({ type: 'SET_FIELD', field: 'imageType', value: file.type });
-                dispatch({ type: 'SET_IMAGE_PREVIEW_URL', value: imagePreviewUrl });
+                dispatch({type: 'SET_FIELD', field: 'imageData', value: buffer});
+                dispatch({type: 'SET_FIELD', field: 'imageType', value: file.type});
+                dispatch({type: 'SET_IMAGE_PREVIEW_URL', value: imagePreviewUrl});
+
+                // Clear the image error on successful upload
+                dispatch({type: 'SET_ERROR', field: 'image', value: ''});
+
             };
             reader.readAsDataURL(file); // Use DataURL for preview
+        } else {
+            console.log("No file selected");
         }
-    };
+    }
 
-    // Handle content change in DynamicReactMDEditor
     const handleContentChange = (value: string | undefined) => {
-        dispatch({ type: 'SET_FIELD', field: 'content', value: value || '' }); // Fallback to empty string if undefined
+        handleFieldChange('content', value || '');  // Validate content field
     };
 
+    const handleImageSourceChange = (value: string) => {
+        dispatch({ type: 'SET_IMAGE_SOURCE', value: value === 'url' });
+    };
 
 
     return (
@@ -304,7 +376,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                                 type="text"
                                 placeholder="Enter title"
                                 value={Data.title}
-                                onChange={(e) => handleInputChange(e, 'title')}
+                                onChange={(e) => handleFieldChange('title', e.target.value)}
                                 className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                     colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                 }`}
@@ -328,7 +400,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                                 type="text"
                                 placeholder="Enter date"
                                 value={Data.date || ''}
-                                onChange={(e) => handleInputChange(e, 'date')}
+                                onChange={(e) => handleFieldChange('date', e.target.value)}
                                 className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                     colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                 }`}
@@ -378,7 +450,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                                     type="text"
                                     placeholder="Enter image URL"
                                     value={Data.image || ''}
-                                    onChange={(e) => {handleInputChange(e, 'image')}}
+                                    onChange={(e) => {handleFieldChange('image', e.target.value); }}
                                     className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                         colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                     }`}
@@ -435,7 +507,7 @@ function EditFormPage<T>({ createValidationSchema, editValidationSchema, APIEndp
                                     <Switch
                                         id="color-mode-switch"
                                         checked={colorMode === 'dark'}
-                                        onChange={handleColorModeChange}
+                                        onCheckedChange={() => dispatch({ type: 'SET_COLOR_MODE', value: colorMode === 'light' ? 'dark' : 'light' })}
                                         className="items-center"
                                     />
                                     <Text as="span" className="ml-2 text-primary">

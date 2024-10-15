@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { earlyLifeCreateSchema, earlyLifeEditSchema } from "@/lib/validation/story/earlyLife";
+import { storyFieldCreateSchema, storyFieldEditSchema } from "@/lib/validation/story/sroryValidation"
 import { Prisma } from "@prisma/client";
 
 // Disable Next.js default body parsing
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
             imageFile: imageData ? new File([], "") : null, // Mock empty file for validation
         };
 
-        const parseResult = earlyLifeCreateSchema.safeParse(fields);
+        const parseResult = storyFieldCreateSchema.safeParse(fields);
         if (!parseResult.success) {
             const errors = parseResult.error.flatten().fieldErrors;
             return NextResponse.json({ errors }, { status: 400 });
@@ -133,7 +133,7 @@ export async function PATCH(request: Request) {
             imageFile: imageData ? new File([], "") : null, // Mock empty file for validation
         };
 
-        const parseResult = earlyLifeEditSchema.safeParse(fields);
+        const parseResult = storyFieldEditSchema.safeParse(fields);
         if (!parseResult.success) {
             const errors = parseResult.error.flatten().fieldErrors;
             console.error('Validation Errors:', errors);

@@ -4,7 +4,7 @@
 
 import React from "react";
 import { Box, Flex, Heading, Text } from "@radix-ui/themes";
-import { earlyLifeCreateSchema, earlyLifeEditSchema  } from '@/lib/validation/story/earlyLife';
+
 import EditFormPage from '../EditForm'; // Adjust the path as necessary
 
 
@@ -50,8 +50,6 @@ function EditEarlyLifePage() {
 
                 {/* Form Container */}
                 <EditFormPage
-                    createValidationSchema={earlyLifeCreateSchema}
-                    editValidationSchema={earlyLifeEditSchema}
                     APIEndpoint={fetchUrl}
                     APIEndpointImage={imageEndpoint}
                     TeamId={undefined}  // Not needed since Early Life is a singleton entry
