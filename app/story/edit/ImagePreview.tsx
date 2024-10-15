@@ -8,9 +8,10 @@ interface ImagePreviewProps {
     imageUrl?: string | null ;
     imageError?: string | null;
     imagePreviewUrl?: string; // Optional prop for pre-rendering images
+    colorMode: 'light' | 'dark';
 }
 
-const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError, imagePreviewUrl }) => {
+const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError, imagePreviewUrl, colorMode }) => {
 
     let previewUrl = '';
 
@@ -25,7 +26,7 @@ const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError,
 
     if (!previewUrl) {
         return (
-            <Box className="w-full max-w-md h-48 flex items-center justify-center rounded-md shadow-sm bg-gray-200">
+            <Box className={`w-full max-w-md h-48 flex items-center justify-center rounded-md shadow-sm ${colorMode == "dark" ? "bg-gray-600" : "bg-gray-200"}`}>
                 <Text as="p" className="text-gray-500">
                     Enter an image URL to preview.
                 </Text>

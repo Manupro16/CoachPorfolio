@@ -383,7 +383,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                             />
 
                             {errors.title && (
-                                <Text as="p" className="text-red-500 mb-2">
+                                <Text as="p" className="text-red-500 mt-2">
                                     {errors.title}
                                 </Text>
                             )}
@@ -406,7 +406,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                                 }`}
                             />
                             {errors.date && (
-                                <Text as="p" className="text-red-500 mb-2">
+                                <Text as="p" className="text-red-500 mt-2">
                                     {errors.date}
                                 </Text>
                             )}
@@ -456,7 +456,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                                     }`}
                                 />
                                 {errors.image && (
-                                    <Text as="p" className="text-red-500 mb-2">
+                                    <Text as="p" className="text-red-500 mt-2">
                                         {errors.image}
                                     </Text>
                                 )}
@@ -477,7 +477,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                                     className="mt-1 block w-full text-white"
                                 />
                                 {errors.image && (
-                                    <Text as="p" className="text-red-500 mb-2">
+                                    <Text as="p" className="text-red-500 mt-2">
                                         {errors.image}
                                     </Text>
                                 )}
@@ -490,6 +490,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                                 imageUrl={useImageUrl ? Data.image : undefined}
                                 imageError={errors.image}
                                 imagePreviewUrl={imagePreviewUrl}
+                                colorMode={colorMode}
                             />
                         </Box>
 
@@ -530,7 +531,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
 
                         {/* Form-Level Error Message */}
                         {errors.form && (
-                            <Text as="p" className="text-red-500 mb-4">
+                            <Text as="p" className="text-red-500 mt-4">
                                 {errors.form}
                             </Text>
                         )}
