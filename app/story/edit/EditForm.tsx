@@ -9,6 +9,7 @@ import axios, {AxiosResponse} from "axios";
 import {CoachingCareer, EarlyLife, PlayerCareer} from "@prisma/client";
 import { storyFieldCreateSchema, storyFieldEditSchema } from "@/lib/validation/story/sroryValidation"
 import {ZodError} from "zod";
+import {useRouter} from "next/navigation";
 
 
  // Adjust the import path as necessary
@@ -182,6 +183,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
 
     const [state, dispatch] = useReducer(formReducer, initialState);
     const { Data, errors, isSubmitting, isLoading, editMode, ApiResponse, colorMode, useImageUrl, imagePreviewUrl } = state;
+    const router = useRouter(); // Initialize the router
 
 
 
@@ -349,6 +351,12 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
 
     const handleImageSourceChange = (value: string) => {
         dispatch({ type: 'SET_IMAGE_SOURCE', value: value === 'url' });
+    };
+
+    // Function to handle discarding changes
+    const handleDiscardChanges = () => {
+        dispatch({ type: 'RESET_FORM' }); // Reset the form state
+        router.back(); // Redirect to the previous page
     };
 
 
@@ -523,7 +531,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                                 colorMode={colorMode}
                             />
                             {errors.content && (
-                                <Text as="p" className="text-red-500 mb-2">
+                                <Text as="p" className="text-red-500 mt-2">
                                     {errors.content}
                                 </Text>
                             )}
@@ -564,7 +572,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                                             </Button>
                                         </AlertDialog.Cancel>
                                         <AlertDialog.Action>
-                                            <Button variant="solid" color="red" onClick={() => {}}>
+                                            <Button variant="solid" color="red" onClick={handleDiscardChanges}>
                                                 Discard Changes
                                             </Button>
                                         </AlertDialog.Action>
