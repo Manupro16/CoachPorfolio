@@ -1,59 +1,101 @@
-import LoadingSkeleton from "@/components/LoadingSkeleton";
-import { AlertDialog, Box, Button, Flex, Heading, RadioGroup, Switch, Text, TextField } from "@radix-ui/themes";
-import RenderImagePreview from "@/app/story/edit/ImagePreview";
-import React, { ChangeEvent, FormEvent, useCallback, useEffect, useReducer, useRef } from "react";
-import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
-import { ZodError, ZodSchema } from "zod";
-import axios, { AxiosResponse} from "axios";
-import debounce from "lodash.debounce";
+//story/edit/EditForm
+import { storyCreateSchema, storyEditSchema } from '@/lib/validation/story/clientStorySchema';
 
-// Dynamically import the ReactMDEditor component to prevent SSR issues
+import dynamic from "next/dynamic";
+import React, {useEffect, useReducer} from "react";
+import {useRouter} from "next/navigation";
+import {ZodError} from "zod";
+import axios from "axios";
+import LoadingSkeleton from '@/components/LoadingSkeleton';
+import {AlertDialog, Box, Button, Flex, Heading, RadioGroup, Switch, Text, TextField} from "@radix-ui/themes";
+import RenderImagePreview from './ImagePreview';
+
 const DynamicReactMDEditor = dynamic(() => import('@/components/DynamicReactMDEditor'), {
     ssr: false,
 });
 
-// Define the form's props interface using generics
-interface EditFormProps<T extends { imageUrl?: string; content: string; title: string; imageFile?: File }> {
-    createValidationSchema: ZodSchema<T>;
-    editValidationSchema: ZodSchema<T>;
-    fetchUrl: string; // API endpoint to fetch initial data
-    submitUrl: string; // API endpoint to submit form data
-    onSuccess?: () => void; // Callback on successful submission
+// Define ImageData interface to encapsulate image-related data
+interface ImageData {
+    source: 'URL' | 'UPLOAD';
+    url?: string;      // Image URL if source is 'URL'
+    file?: File;       // Image file if source is 'UPLOAD'
+    previewUrl?: string; // For displaying image previews
 }
 
-interface FormState<T  extends { imageUrl?: string; content: string; title: string; imageFile?: File }> {
-    data: T  ; // Holds the form data
-    errors: Partial<Record<keyof T | 'image', string>>; // Field-specific and general errors
+// Define CareerFields interface for shared data fields
+interface CareerFields {
+    id?: number;
+    title: string;
+    content: string;
+    date?: string;
+    image: ImageData;
+}
+
+// Define ImageErrors interface
+interface ImageErrors {
+    source?: string;
+    url?: string;
+    file?: string;
+    previewUrl?: string;
+}
+
+// Define FormErrors interface
+interface FormErrors {
+    id?: string;
+    title?: string;
+    content?: string;
+    date?: string;
+    image?: ImageErrors;
+    form?: string;
+}
+
+
+// Define FormState interface
+interface FormState {
+    data: CareerFields;
+    errors: FormErrors;
     isSubmitting: boolean;
     isLoading: boolean;
-    useImageUrl: boolean; // Specific to image handling
-    imageFile: File | null; // For file uploads
-    imagePreviewUrl: string; // For image previews
+    editMode: boolean;
     colorMode: 'light' | 'dark';
-    formError: string; // Form-level error
-    editMode: boolean; // For editing mode
-    ApiResponse: Partial<AxiosResponse>
 }
 
-type Action<T extends { imageUrl?: string; content: string; title: string; imageFile?: File  }> =
-    | { type: 'SET_FIELD'; field: keyof T; value: T[keyof T] }
-    | { type: 'SET_ERROR'; field: keyof FormState<T>['errors']; value: string }
-    | { type: 'SET_FORM_ERROR'; value: string }
+// Initialize form state
+const initialState: FormState = {
+    data: {
+        title: '',
+        content: '',
+        date: '',
+        image: {
+            source: 'URL',
+            url: '',
+            file: undefined,
+            previewUrl: '',
+        },
+    },
+    errors: {},
+    isSubmitting: false,
+    isLoading: true,
+    editMode: false,
+    colorMode: 'light',
+};
+
+// Define Action Types
+type Actions =
+    | { type: 'SET_FIELD'; field: keyof CareerFields; value: unknown }
+    | { type: 'SET_IMAGE_FIELD'; field: keyof ImageData; value: unknown }
+    | { type: 'SET_ERROR'; field: keyof Omit<FormErrors, 'image'>; value: string | undefined }
+    | { type: 'SET_IMAGE_ERROR'; field: keyof ImageErrors; value: string | undefined }
+    | { type: 'CLEAR_ERRORS' }
     | { type: 'SET_SUBMITTING'; value: boolean }
     | { type: 'SET_LOADING'; value: boolean }
-    | { type: 'SET_IMAGE_FILE'; file: File | null }
-    | { type: 'SET_USE_IMAGE_URL'; useImageUrl: boolean }
-    | { type: 'SET_IMAGE_PREVIEW_URL'; url: string }
-    | { type: 'RESET_FORM'; initialData: T }
-    | { type: 'SET_COLOR_MODE'; mode: 'light' | 'dark' }
     | { type: 'SET_EDIT_MODE'; value: boolean }
-    | { type: "SET_API_RESPONSE"; value: AxiosResponse }
+    | { type: 'SET_COLOR_MODE'; value: 'light' | 'dark' }
+    | { type: 'RESET_FORM' };
 
-function formReducer<T extends { imageUrl?: string; content: string; title: string; imageFile?: File  }>(
-    state: FormState<T>,
-    action: Action<T>
-): FormState<T> {
+
+// Define the reducer function
+const formReducer = (state: FormState, action: Actions): FormState => {
     switch (action.type) {
         case 'SET_FIELD':
             return {
@@ -61,6 +103,25 @@ function formReducer<T extends { imageUrl?: string; content: string; title: stri
                 data: {
                     ...state.data,
                     [action.field]: action.value,
+                },
+                errors: {
+                    ...state.errors,
+                    [action.field]: undefined, // Clear the error for the field
+                },
+            };
+        case 'SET_IMAGE_FIELD':
+            return {
+                ...state,
+                data: {
+                    ...state.data,
+                    image: {
+                        ...state.data.image,
+                        [action.field]: action.value,
+                    },
+                },
+                errors: {
+                    ...state.errors,
+                    image: undefined, // Clear image errors
                 },
             };
         case 'SET_ERROR':
@@ -71,11 +132,24 @@ function formReducer<T extends { imageUrl?: string; content: string; title: stri
                     [action.field]: action.value,
                 },
             };
-        case 'SET_FORM_ERROR':
+        case 'SET_IMAGE_ERROR':
             return {
                 ...state,
-                formError: action.value,
+                errors: {
+                    ...state.errors,
+                    image: {
+                        ...state.errors.image,
+                        [action.field]: action.value,
+                    },
+                },
             };
+
+        case 'CLEAR_ERRORS':
+            return {
+                ...state,
+                errors: {},
+            };
+
         case 'SET_SUBMITTING':
             return {
                 ...state,
@@ -86,440 +160,282 @@ function formReducer<T extends { imageUrl?: string; content: string; title: stri
                 ...state,
                 isLoading: action.value,
             };
-
         case 'SET_EDIT_MODE':
-            console.log('Setting Edit Mode to:', action.value); // Debugging line
-            console.log(state); // Debugging line
             return {
                 ...state,
-                editMode: action.value
-            }
-
-        case "SET_API_RESPONSE":
-            return {
-                ...state,
-                ApiResponse: action.value
-            }
-
-        case 'SET_IMAGE_FILE':
-            return {
-                ...state,
-                imageFile: action.file,
+                editMode: action.value,
             };
-        case 'SET_USE_IMAGE_URL':
-            return {
-                ...state,
-                useImageUrl: action.useImageUrl,
-            };
-        case 'SET_IMAGE_PREVIEW_URL':
-            return {
-                ...state,
-                imagePreviewUrl: action.url,
-            };
-
         case 'SET_COLOR_MODE':
             return {
                 ...state,
-                colorMode: action.mode,
+                colorMode: action.value,
             };
         case 'RESET_FORM':
-            return getInitialState(action.initialData);
+            return initialState;
         default:
             return state;
     }
+};
+
+interface EditFormProps {
+    APIEndpoint: string;
+    APIEndpointImage: string;
+    TeamId?: number;
 }
 
+function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) {
 
 
-function getInitialState<T extends { imageUrl?: string; content: string; title: string; imageFile?: File }>(initialData: T): FormState<T> {
-    return {
-        data: initialData,
-        errors: {},
-        isSubmitting: false,
-        isLoading: true,
-        useImageUrl: Boolean(initialData.imageUrl),
-        imageFile: null,
-        imagePreviewUrl: initialData.imageUrl || '',
-        colorMode: 'dark',
-        formError: '',
-        editMode: false,
-        ApiResponse: {} as AxiosResponse
-    };
-}
-
-function EditFormPage<T extends { imageUrl?: string; content: string; title: string }>({
-                                                                                           editValidationSchema,
-                                                                                           createValidationSchema,
-                                                                                           fetchUrl,
-                                                                                           submitUrl,
-                                                                                           onSuccess,
-                                                                                       }: EditFormProps<T>) {
-
-    const [state, dispatch] = useReducer(formReducer<T>, getInitialState({} as T));
-
-    const {
-        data,
-        errors,
-        isSubmitting,
-        isLoading,
-        useImageUrl,
-        imagePreviewUrl,
-        colorMode,
-        formError,
-        editMode,
-        ApiResponse
-    } = state;
-
+    const [state, dispatch] = useReducer(formReducer, initialState);
+    const { data, errors, isSubmitting, isLoading, editMode, colorMode } = state;
     const router = useRouter();
-    const previewUrlRef = useRef<string | null>(null);
 
-    const validateForm = (formData: Partial<T>): Partial<Record<keyof T | 'image', string>> => {
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                dispatch({ type: 'SET_LOADING', value: true });
+
+                const endpoint = TeamId ? `${APIEndpoint}/${TeamId}` : APIEndpoint;
+
+                console.log('Fetching data from: ', endpoint);
+
+                const response = await axios.get<CareerFields>(endpoint);
+                const fetchedData = response.data;
+                console.log('Fetched data: ', fetchedData);
+
+                if (response.status === 204 || !fetchedData) {
+
+                    // No data available -> Create mode
+                    dispatch({ type: 'SET_EDIT_MODE', value: false });
+                    dispatch({ type: 'SET_ERROR', field: 'form', value: 'No data available. Please create the entry.' });
+                    dispatch({ type: 'SET_LOADING', value: false });
+                    return;
+                } else {
+                    // Data available -> Edit mode
+                    dispatch({ type: 'SET_EDIT_MODE', value: true });
+                }
+
+                // Update the form state with fetched data
+                dispatch({ type: 'SET_FIELD', field: 'title', value: fetchedData.title ?? '' });
+                dispatch({ type: 'SET_FIELD', field: 'content', value: fetchedData.content ?? '' });
+                dispatch({ type: 'SET_FIELD', field: 'date', value: fetchedData.date ?? '' });
+
+                // Handle image data based on imageSource
+                // Handle image data based on imageSource
+                if (fetchedData.image.url === 'URL') {
+                    dispatch({ type: 'SET_IMAGE_FIELD', field: 'source', value: 'URL' });
+                    dispatch({ type: 'SET_IMAGE_FIELD', field: 'url', value: fetchedData.image ?? '' });
+                } else if (fetchedData.image.url === 'UPLOAD') {
+                    dispatch({ type: 'SET_IMAGE_FIELD', field: 'source', value: 'UPLOAD' });
+                    // Fetch the image blob from the server
+                    const imageResponse = await axios.get(APIEndpointImage, {
+                        responseType: 'blob',
+                    });
+                    const imageBlob = imageResponse.data;
+                    // Create a File object from the blob
+                    const file = new File([imageBlob], 'uploaded-image', { type: imageBlob.type });
+                    dispatch({ type: 'SET_IMAGE_FIELD', field: 'file', value: file });
+                    // Generate a preview URL
+                    const previewUrl = URL.createObjectURL(imageBlob);
+                    dispatch({ type: 'SET_IMAGE_FIELD', field: 'previewUrl', value: previewUrl });
+                }
+
+
+
+                dispatch({ type: 'SET_LOADING', value: false });
+            } catch (error) {
+                dispatch({ type: 'SET_EDIT_MODE', value: false });
+                console.error('Error fetching data: ', error);
+                dispatch({ type: 'SET_ERROR', field: 'form', value: 'Failed to fetch data. Please try again later.' });
+                dispatch({ type: 'SET_LOADING', value: false });
+            }
+        }
+        fetchData();
+    }, [APIEndpoint, APIEndpointImage, TeamId]);
+
+
+
+
+
+
+    // Updates the image source in the state when the user selects between URL and UPLOAD.
+    const handleImageSourceChange = (value: string) => {
+        dispatch({ type: 'SET_IMAGE_FIELD', field: 'source', value: value === 'url' ? 'URL' : 'UPLOAD' });
+    };
+
+    // Updates the image URL in the state when the user types in the URL input.
+    const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const url = e.target.value;
+        dispatch({ type: 'SET_IMAGE_FIELD', field: 'url', value: url });
+    };
+
+    // Updates the image file and preview URL in the state when the user uploads a file.
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const previewUrl = reader.result as string;
+                dispatch({ type: 'SET_IMAGE_FIELD', field: 'file', value: file });
+                dispatch({ type: 'SET_IMAGE_FIELD', field: 'previewUrl', value: previewUrl });
+                dispatch({ type: 'SET_IMAGE_ERROR', field: 'file', value: '' }); // Clear any existing image errors
+            };
+            reader.readAsDataURL(file);
+        } else {
+            console.log('No file selected');
+        }
+    };
+
+    // Validates the form data and returns an object containing any errors.
+    const validateFormData = (formData: CareerFields): FormErrors => {
+        const errors: FormErrors = {};
+
+        // Validate image fields
+        if (formData.image.source === 'URL' && !formData.image.url) {
+            errors.image = { url: 'Please provide a valid image URL.' };
+        } else if (formData.image.source === 'UPLOAD' && !formData.image.file) {
+            errors.image = { file: 'Please upload an image file.' };
+        }
+
+        // Validate other fields using Zod schema
         try {
-            console.log("validation mode" + editMode);
-            const schema = editModeRef.current ? editValidationSchema : createValidationSchema;
+            const schema = editMode ? storyEditSchema : storyCreateSchema;
             schema.parse(formData);
-            return {};
         } catch (error) {
             if (error instanceof ZodError) {
-                const fieldErrors = error.flatten().fieldErrors;
-                const formattedErrors: Partial<Record<keyof T | 'image', string>> = {};
-
-                for (const key in fieldErrors) {
-                    if (fieldErrors[key] && fieldErrors[key].length > 0) {
-                        formattedErrors[key as keyof T] = fieldErrors[key][0];
-                    }
-                }
-
-                // Handle general image errors if present
-                if (fieldErrors['imageUrl']?.length && !useImageUrl) {
-                    formattedErrors['image'] = fieldErrors['imageUrl'][0];
-                }
-
-                return formattedErrors;
-            }
-            return {};
-        }
-    };
-
-    const editModeRef = useRef(editMode);
-    useEffect(() => {
-        editModeRef.current = editMode;
-        console.log("editMode updated:", editMode);  // Debugging line to track the updated mode
-    }, [editMode]);
-
-
-    // Fetch initial data
-    useEffect(() => {
-        let isMounted = true;
-        const controller = new AbortController();
-
-        const fetchData = async () => {
-            dispatch({ type: 'SET_LOADING', value: true });
-
-            try {
-                const response: AxiosResponse<T> = await axios.get(fetchUrl, {
-                    signal: controller.signal,
-                });
-
-                if (isMounted && response.status === 200 && response.data) {
-                    console.log('Fetched Data:', response.data); // Debugging line
-                    dispatch({ type: 'SET_EDIT_MODE', value: true })
-                    console.log("form status" + editMode)
-
-                    const transformedData = {
-                        ...response.data,
-                        imageData: Boolean(response.data.imageUrl),
-                    }
-
-                    dispatch({ type: 'RESET_FORM', initialData: transformedData });
-
-                    if (transformedData.imageUrl) {
-                        dispatch({
-                            type: 'SET_IMAGE_PREVIEW_URL',
-                            url: transformedData.imageUrl,
-                        });
+                const zodErrors = error.flatten().fieldErrors;
+                for (const key in zodErrors) {
+                    const errorMessage = zodErrors[key]?.[0] || 'Invalid input.';
+                    if (key === 'image') {
+                        errors.image = { source: errorMessage };
                     } else {
-                        dispatch({
-                            type: 'SET_IMAGE_PREVIEW_URL',
-                            url: '/api/story/early-life/image',
-                        });
+                        errors[key as keyof FormErrors] = errorMessage;
                     }
                 }
-            } catch (error) {
-                console.log(error)
-                if (isMounted) {
-                    if (axios.isCancel(error)) {
-                        console.log('Request canceled:', error.message);
-                    } else {
-
-                        console.error('Error fetching data:', error);
-                        dispatch({ type: 'SET_EDIT_MODE', value: false })
-                        dispatch({
-                            type: 'SET_FORM_ERROR',
-                            value: 'Failed to load data. Please Create New Data.',
-                        });
-                    }
-                }
-
-            } finally {
-                if (isMounted) {
-                    dispatch({ type: 'SET_LOADING', value: false });
-                    console.log(editMode);
-                }
             }
         }
 
-        fetchData();
-
-        return () => {
-            isMounted = false;
-            controller.abort();
-        };
-    }, [fetchUrl])
-
-    // Debounced function to validate image loading
-    const debouncedValidateImage = useCallback(
-        debounce((url: string) => {
-            const imageErrors = validateForm({imageUrl: url} as Partial<T>);
-            if (!imageErrors.imageUrl) {
-                const img = new Image();
-                img.onload = () => dispatch({type: 'SET_ERROR', field: 'image', value: ''});
-                img.onerror = () => dispatch({type: 'SET_ERROR', field: 'image', value: 'Failed to load image.'});
-                img.src = url;
-            }
-        }, 500),
-        [],
-    );
-
-    // Handle field changes
-    const handleFieldChange = <K extends keyof T>(field: K, value: T[K]) => {
-        dispatch({type: 'SET_FIELD', field, value});
-
-        const validationErrors = validateForm({[field]: value} as unknown as Partial<T>);
-
-        if (validationErrors[field]) {
-            dispatch({
-                type: 'SET_ERROR',
-                field: field as keyof FormState<T>['errors'],
-                value: validationErrors[field],
-            });
-        } else {
-            dispatch({
-                type: 'SET_ERROR',
-                field: field as keyof FormState<T>['errors'],
-                value: '',
-            });
-        }
+        return errors;
     };
 
-    // Handle Image URL change
-    const handleImageUrlChange = (e: ChangeEvent<HTMLInputElement>): void => {
-        const url = e.target.value;
-        handleFieldChange('imageUrl', url);
-        debouncedValidateImage(url);
-    };
 
-    // Handle Image File change
-    const handleImageFileChange = (e: ChangeEvent<HTMLInputElement>): void => {
-        const file = e.target.files?.[0] || null;
-        dispatch({type: 'SET_IMAGE_FILE', file});
-        dispatch({type: 'SET_ERROR', field: 'image', value: ''});
 
-        if (file) {
-            // Revoke the previous object URL if it exists
-            if (previewUrlRef.current) {
-                URL.revokeObjectURL(previewUrlRef.current);
-            }
 
-            const previewUrl = URL.createObjectURL(file);
-            previewUrlRef.current = previewUrl;
-            dispatch({type: 'SET_IMAGE_PREVIEW_URL', url: previewUrl});
-        } else {
-            // Revoke the previous object URL if it exists
-            if (previewUrlRef.current) {
-                URL.revokeObjectURL(previewUrlRef.current);
-                previewUrlRef.current = null;
-            }
-            dispatch({type: 'SET_IMAGE_PREVIEW_URL', url: ''});
-        }
-    };
-
-    // Handle Image Source Selection
-    const handleUseImageUrlChange = (useUrl: boolean) => {
-        dispatch({type: 'SET_USE_IMAGE_URL', useImageUrl: useUrl});
-
-        if (useUrl) {
-            // Reset image file-related state
-            dispatch({type: 'SET_IMAGE_FILE', file: null});
-            dispatch({type: 'SET_IMAGE_PREVIEW_URL', url: ''});
-        } else {
-            // Reset image URL-related state
-            handleFieldChange('imageUrl', '');
-            dispatch({type: 'SET_IMAGE_PREVIEW_URL', url: ''});
-        }
-    };
-
-    // Cleanup debounce and object URLs on unmount
-    useEffect(() => {
-        return () => {
-            debouncedValidateImage.cancel();
-            if (previewUrlRef.current) {
-                URL.revokeObjectURL(previewUrlRef.current);
-            }
-        };
-    }, [debouncedValidateImage]);
-
-    // Handle form submission
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log('Current Edit Mode (Ref):', editModeRef.current); // Debugging line
-        console.log('Current Edit Mode:', editMode); // Debugging line to verify the stale state
+        console.log('Submitting form data:');
+        dispatch({ type: 'SET_SUBMITTING', value: true });
 
-
-        // Prepare data for validation
-        const formData: Partial<T & { imageData?: boolean }  > = {
-            ...data,
-        };
-
-        console.log('Form data:', formData); // Debugging line
-
-        // Validate the data using the unified validation function
-        const validationErrors = validateForm(formData);
-
+        // Validate form data
+        const validationErrors = validateFormData(data);
         if (Object.keys(validationErrors).length > 0) {
-            // Update errors in state
+            dispatch({ type: 'SET_ERROR', field: 'form', value: 'Please correct the errors below.' });
+
+            // Clear existing errors
+            dispatch({ type: 'CLEAR_ERRORS' });
+
+            // Dispatch individual errors
             for (const key in validationErrors) {
-                const typedKey = key as keyof T | 'image';
-                const errorMessage = validationErrors[typedKey];
-                if (errorMessage) {
-                    console.log('Error:', errorMessage);
+                console.log('Dispatching error for field:', key);
+                if (key === 'image') {
+                    const imageErrors = validationErrors.image!;
+                    for (const imageKey in imageErrors) {
+                        dispatch({
+                            type: 'SET_IMAGE_ERROR',
+                            field: imageKey as keyof ImageErrors,
+                            value: imageErrors[imageKey as keyof ImageErrors],
+                        });
+                    }
+                } else {
                     dispatch({
                         type: 'SET_ERROR',
-                        field: typedKey,
-                        value: errorMessage,
+                        field: key as keyof Omit<FormErrors, 'image'>,
+                        value: validationErrors[key as keyof typeof validationErrors],
                     });
                 }
             }
-            return; // Prevent form submission if validation fails
-        } else {
-            // Clear form-level errors
-            dispatch({type: 'SET_FORM_ERROR', value: ''});
-        }
-
-        // Create FormData for submission
-        const submissionData = new FormData();
-        Object.keys(data).forEach((key) => {
-            if (key !== 'imageData') {
-                const typedKey = key as keyof T;
-                const value = data[typedKey];
-                if (value !== undefined && value !== null) {
-                    submissionData.append(key, value as string | Blob);
-                }
-            }
-        });
-
-        // Append imageUrl or imageFile based on the selected option
-        if (useImageUrl) {
-            if (typeof data.imageUrl === 'string') {
-                submissionData.append('imageUrl', data.imageUrl);
-            }
-        } else if (state.imageFile) {
-            submissionData.append('imageFile', state.imageFile);
-        } else {
-            dispatch({type: 'SET_ERROR', field: 'image', value: 'Please provide an image.'});
+            dispatch({ type: 'SET_SUBMITTING', value: false });
             return;
         }
 
+        // Prepare data for submission
+        const formData = new FormData();
+        formData.append('title', data.title);
+        formData.append('content', data.content);
+        formData.append('date', data.date || '');
+        formData.append('imageSource', data.image.source);
+
+        if (data.image.source === 'URL' && data.image.url) {
+            formData.append('imageUrl', data.image.url);
+        } else if (data.image.source === 'UPLOAD' && data.image.file) {
+            formData.append('imageFile', data.image.file);
+        }
+
+        // Log the FormData entries
+        console.log('FormData entries:');
+        for (let [ key, value] of formData.entries()) {
+            console.log(`${key}:`, value);
+        }
+
         try {
-            dispatch({type: 'SET_SUBMITTING', value: true});
+            console.log('Submitting data to API...');
+            const endpoint = TeamId ? `${APIEndpoint}/${TeamId}` : APIEndpoint;
+            const response = editMode
+                ? await axios.patch(endpoint, formData)
+                : await axios.post(endpoint, formData);
 
-            let response: AxiosResponse;
-
-            console.log('Submitting Form with Edit Mode:', editMode); // Debugging line
-
-
-            if (!editModeRef.current) {
-                console.log('inside POST'); // Debugging line
-                response = await axios.post(submitUrl, submissionData, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                });
-
+            if (response.status === 200 || response.status === 201) {
+                console.log('Data saved successfully');
+                // for (const [key, value] of Object.entries(response.data)) {
+                //     console.log(`${key}:`, value);
+                // }
+                router.push('/story'); // Redirect upon success
             } else {
-                console.log("Inside PATCH")
-                response = await axios.patch(submitUrl, submissionData, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                });
-            }
-
-            dispatch({ type: "SET_API_RESPONSE", value: response });
-
-            console.log('Submission Response:'); // Debugging line
-
-            if (ApiResponse.status === 200 || ApiResponse.status === 201) {
-                if (onSuccess) onSuccess();
-                else router.push('/story');
-            } else {
-                console.error('Server Error:', ApiResponse.data.error);
-                dispatch({
-                    type: 'SET_FORM_ERROR',
-                    value: 'An error occurred while saving data.',
-                });
+                dispatch({ type: 'SET_ERROR', field: 'form', value: 'An error occurred while saving data.' });
             }
         } catch (error) {
             console.error('Submission Error:', error);
-
-            if (axios.isAxiosError(error) && error.response) {
-                const apiError = error.response.data;
-                // Handle validation errors
-                if (apiError.errors) {
-                    for (const key in apiError.errors) {
-                        const typedKey = key as keyof T | 'image';
-                        const errorMessage = apiError.errors[key]?.[0] || 'Invalid input.';
-                        dispatch({
-                            type: 'SET_ERROR',
-                            field: typedKey,
-                            value: errorMessage,
-                        });
-                    }
-                }
-                // Handle general error messages
-                if (apiError.message) {
-                    dispatch({
-                        type: 'SET_FORM_ERROR',
-                        value: apiError.message,
-                    });
-                }
-            } else {
-                dispatch({
-                    type: 'SET_FORM_ERROR',
-                    value: 'An unexpected error occurred. Please try again.',
-                });
-            }
+            dispatch({ type: 'SET_ERROR', field: 'form', value: 'An unexpected error occurred.' });
         } finally {
-            dispatch({type: 'SET_SUBMITTING', value: false});
+            console.log("formData: " + formData)
+            dispatch({ type: 'SET_SUBMITTING', value: false });
         }
     };
 
-    const handleColorModeChange = (mode: 'light' | 'dark') => {
-        dispatch({ type: 'SET_COLOR_MODE', mode });
+    const handleDiscardChanges = () => {
+        dispatch({ type: 'RESET_FORM' }); // Reset the form state
+        router.back(); // Redirect to the previous page
     };
 
+    const handleFieldChange = (field: keyof CareerFields, value: unknown) => {
+        dispatch({ type: 'SET_FIELD', field, value });
 
-    // Handler for the Cancel button
-    const handleCancel = (): void => {
-        router.back();
+        // Validate the field after updating it
+        const formData: CareerFields = { ...data, [field]: value };
+        const validationErrors = validateFormData(formData);
+
+        if (validationErrors && validationErrors[field]) {
+            dispatch({ type: 'SET_ERROR', field, value: validationErrors[field] });
+        } else {
+            dispatch({ type: 'SET_ERROR', field, value: '' });
+        }
     };
+
+    const handleContentChange = (value: string | undefined) => {
+        handleFieldChange('content', value || '');
+    };
+
 
     return (
         <>
             {/* Form Container */}
-            {isLoading || !data ? (
+            {isLoading ? (
                 <LoadingSkeleton/>
             ) : (
                 <Box className="shadow-md rounded-lg p-8 w-full max-w-3xl bg-gray-900">
-                    {formError && (
+                    {errors.form && (
                         <Text as="p" className="text-red-500 mb-4">
-                            {formError}
+                            {errors.form}
                         </Text>
                     )}
                     <form className="space-y-6" onSubmit={handleSubmit}>
@@ -534,15 +450,38 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                                 type="text"
                                 placeholder="Enter title"
                                 value={data.title}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => handleFieldChange('title', e.target.value)}
+                                onChange={(e) => handleFieldChange('title', e.target.value)}
                                 className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                     colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                 }`}
                             />
 
                             {errors.title && (
-                                <Text as="p" className="text-red-500 mb-2">
-                                    {errors.title}
+                                <Text as="p" className="text-red-500 mt-2">
+                                    {errors.title }
+                                </Text>
+                            )}
+                        </Box>
+
+                        {/* Date Field */}
+                        <Box>
+                            <Heading as="h1" size="4" className="text-4xl font-bold text-primary mb-4">
+                                Date
+                            </Heading>
+                            <TextField.Root
+                                id="date"
+                                name="date"
+                                type="text"
+                                placeholder="Enter date"
+                                value={data.date || ''}
+                                onChange={(e) => handleFieldChange('date', e.target.value)}
+                                className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
+                                    colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
+                                }`}
+                            />
+                            {errors.date && (
+                                <Text as="p" className="text-red-500 mt-2">
+                                    {errors.date }
                                 </Text>
                             )}
                         </Box>
@@ -553,8 +492,8 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                                 Select Image Source
                             </Heading>
                             <RadioGroup.Root
-                                value={useImageUrl ? 'url' : 'upload'}
-                                onValueChange={(value: string) => handleUseImageUrlChange(value === 'url')}
+                                value={data.image.source === 'URL' ? 'url' : 'upload'}
+                                onValueChange={handleImageSourceChange}
                                 aria-label="Image Source"
                                 className="flex flex-row gap-4"
                             >
@@ -574,7 +513,7 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                         </Box>
 
                         {/* Conditionally Render Image Input Fields */}
-                        {useImageUrl ? (
+                        {data.image.source === 'URL' ? (
                             <Box>
                                 <Heading as="h1" size="4" className="font-bold text-primary mb-4">
                                     Image URL
@@ -584,15 +523,15 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                                     name="imageUrl"
                                     type="text"
                                     placeholder="Enter image URL"
-                                    value={data.imageUrl || ''}
+                                    value={data.image.url || ''}
                                     onChange={handleImageUrlChange}
                                     className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                         colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                     }`}
                                 />
                                 {errors.image && (
-                                    <Text as="p" className="text-red-500 mb-2">
-                                        {errors.image}
+                                    <Text as="p" className="text-red-500 mt-2">
+                                        {errors.image.url}
                                     </Text>
                                 )}
                             </Box>
@@ -608,12 +547,12 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                                     id="imageFile"
                                     type="file"
                                     accept="image/*"
-                                    onChange={handleImageFileChange}
+                                    onChange={handleImageUpload}
                                     className="mt-1 block w-full text-white"
                                 />
                                 {errors.image && (
-                                    <Text as="p" className="text-red-500 mb-2">
-                                        {errors.image}
+                                    <Text as="p" className="text-red-500 mt-2">
+                                        {errors.image.file}
                                     </Text>
                                 )}
                             </Box>
@@ -622,9 +561,11 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                         {/* Image Preview */}
                         <Box className="mt-4">
                             <RenderImagePreview
-                                imageUrl={data.imageUrl || ''}
-                                imageError={errors.image}
-                                imagePreviewUrl={imagePreviewUrl}
+                                imageSource={data.image.source}
+                                imageUrl={data.image.url}
+                                imagePreviewUrl={data.image.previewUrl}
+                                imageError={errors.image?.url || errors.image?.file}
+                                colorMode={colorMode}
                             />
                         </Box>
 
@@ -642,7 +583,7 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                                     <Switch
                                         id="color-mode-switch"
                                         checked={colorMode === 'dark'}
-                                        onCheckedChange={(checked: boolean) => handleColorModeChange(checked ? 'dark' : 'light')}
+                                        onCheckedChange={() => dispatch({ type: 'SET_COLOR_MODE', value: colorMode === 'light' ? 'dark' : 'light' })}
                                         className="items-center"
                                     />
                                     <Text as="span" className="ml-2 text-primary">
@@ -653,20 +594,20 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                             {/* Markdown Editor */}
                             <DynamicReactMDEditor
                                 value={data.content || ''}
-                                onChange={(value: string | undefined) => handleFieldChange('content', value || '')}
+                                onChange={handleContentChange}
                                 colorMode={colorMode}
                             />
                             {errors.content && (
-                                <Text as="p" className="text-red-500 mb-2">
+                                <Text as="p" className="text-red-500 mt-2">
                                     {errors.content}
                                 </Text>
                             )}
                         </Box>
 
                         {/* Form-Level Error Message */}
-                        {formError && (
-                            <Text as="p" className="text-red-500 mb-4">
-                                {formError}
+                        {errors.form && (
+                            <Text as="p" className="text-red-500 mt-4">
+                                {errors.form}
                             </Text>
                         )}
 
@@ -698,7 +639,7 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                                             </Button>
                                         </AlertDialog.Cancel>
                                         <AlertDialog.Action>
-                                            <Button variant="solid" color="red" onClick={handleCancel}>
+                                            <Button variant="solid" color="red" onClick={handleDiscardChanges}>
                                                 Discard Changes
                                             </Button>
                                         </AlertDialog.Action>
@@ -720,9 +661,14 @@ function EditFormPage<T extends { imageUrl?: string; content: string; title: str
                 </Box>
             )}
         </>
-    );
+    )
+
+
+
+
+
+
 }
 
 export default EditFormPage;
-
 

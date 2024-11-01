@@ -1,363 +1,248 @@
-//story/edit/EditForm
+'use client'
 
+// EditFormPage.tsx
+import {AlertDialog, Box, Button, Flex, Heading, RadioGroup, Switch, Text, TextField,} from '@radix-ui/themes';
+import RenderImagePreview from './ImagePreview';
 import LoadingSkeleton from "@/components/LoadingSkeleton";
-import {AlertDialog, Box, Button, Flex, Heading, RadioGroup, Switch, Text, TextField} from "@radix-ui/themes";
-import React, { useEffect, useReducer} from "react";
-import RenderImagePreview from "@/app/story/edit/ImagePreview";
 import dynamic from "next/dynamic";
-import axios, {AxiosResponse} from "axios";
-import {CoachingCareer, EarlyLife, PlayerCareer} from "@prisma/client";
-import { storyFieldCreateSchema, storyFieldEditSchema } from "@/lib/validation/story/sroryValidation"
-import {ZodError} from "zod";
-import {useRouter} from "next/navigation";
+import {Controller, useForm} from "react-hook-form";
+import {useCallback, useEffect, useMemo, useState} from "react";
+import axios from 'axios';
+import {yupResolver} from "@hookform/resolvers/yup";
+import {validationSchema} from "@/app/story/edit/validationSchemas/validationSchema";
+import {CareerFields,} from "@/app/story/edit/types";
+import {useRouter} from 'next/navigation';
 
-
- // Adjust the import path as necessary
-
+import {EarlyLife} from '@prisma/client'
 
 
 const DynamicReactMDEditor = dynamic(() => import('@/components/DynamicReactMDEditor'), {
     ssr: false,
 });
 
-// Define a union type for all models
-type CareerModel = EarlyLife | PlayerCareer | CoachingCareer;
 
-// Extend the error type to include form-level errors
-type FormErrors = Partial<CareerModel> & {
-    form?: string; // Allow form-level errors
-};
-
-// Define FormState interface
-interface FormState {
-    Data: Partial<CareerModel>;
-    errors: FormErrors;
-    isSubmitting: boolean;
-    isLoading: boolean;
-    editMode: boolean; // Indicates if the form is in edit mode
-    useImageUrl: boolean;
-    imagePreviewUrl?: string; // For showing the preview of uploaded images
-    ApiResponse: Partial<AxiosResponse>;
-    colorMode: 'light' | 'dark';
-}
-
-// Define Actions type
-type Actions =
-    | { type: 'SET_FIELD'; field: keyof CareerModel; value: CareerModel[keyof CareerModel] }
-    | { type: 'SET_IMAGE_PREVIEW_URL'; value: string } // Add this line
-    | { type: 'SET_ERROR'; field: keyof FormErrors; value: string }
-    | { type: 'TOGGLE_EDIT_MODE'; value: boolean }
-    | { type: 'SET_API_RESPONSE'; value: Partial<AxiosResponse> }
-    | { type: 'SET_SUBMITTING'; value: boolean }
-    | { type: 'SET_LOADING'; value: boolean }
-    | { type: 'SET_COLOR_MODE'; value: 'light' | 'dark' }
-    | { type: 'SET_IMAGE_SOURCE'; value: boolean }  // Handle Image source change
-    | { type: 'RESET_FORM' };
-
-
-const formReducer = (state: FormState, action: Actions): FormState => {
-    switch (action.type) {
-        case 'SET_FIELD':
-            return {
-                ...state,
-                Data: {
-                    ...state.Data,
-                    [action.field]: action.value
-                },
-                errors: {
-                    ...state.errors,
-                    [action.field]: undefined, // Clear error on field update
-                },
-            };
-
-        case 'SET_ERROR':
-            return {
-                ...state,
-                errors: {
-                    ...state.errors,
-                    [action.field]: action.value, // Set error for specific field or global form error
-                },
-            };
-
-        case 'SET_IMAGE_SOURCE': // Handle image URL vs Upload toggle
-            return {
-                ...state,
-                useImageUrl: action.value,
-            };
-
-        case 'SET_IMAGE_PREVIEW_URL': // Handle image preview URL
-            return {
-                ...state,
-                imagePreviewUrl: action.value,
-            };
-
-        case 'TOGGLE_EDIT_MODE':
-            return {
-                ...state,
-                editMode: action.value,
-            };
-
-        case 'SET_API_RESPONSE':
-            return {
-                ...state,
-                ApiResponse: action.value,
-            };
-
-        case 'SET_SUBMITTING':
-            return {
-                ...state,
-                isSubmitting: action.value,
-            };
-
-        case 'SET_LOADING':
-            return {
-                ...state,
-                isLoading: action.value,
-            };
-
-        case 'SET_COLOR_MODE':
-            return {
-                ...state,
-                colorMode: action.value,
-            };
-
-        case 'RESET_FORM':
-            return {
-                Data: {
-                    title: '',
-                    content: '',
-                    image: '',
-                    imageType: '',
-                    imageData: undefined,
-                    imageSource: 'URL',
-                    date: ''
-                    // Reset additional fields if any
-                },
-                errors: {},
-                isSubmitting: false,
-                isLoading: false,
-                editMode: false,
-                imagePreviewUrl: undefined,
-                useImageUrl: true,
-                ApiResponse: {},
-                colorMode: 'light', // Reset colorMode separately
-            };
-
-        default:
-            return state;
-    }
-};
-
-
-const initialState: FormState = {
-    Data: {
-        title: '',
-        content: '',
-        image: '',
-        imageType: '',
-        imageData: undefined,
-        imageSource: 'URL',
-        date: ''
-    },
-    errors: {},
-    isSubmitting: false,
-    isLoading: true,
-    editMode: false,
-    useImageUrl: true,
-    imagePreviewUrl: undefined,
-    ApiResponse: {},
-    colorMode: "light",
-};
-
-
-// Define Form Props
-interface EditFormProps {
+interface EditFormPageProps {
     APIEndpoint: string;
     APIEndpointImage: string;
-    TeamId? : number
+    TeamId?: number;
 }
 
+function EditFormPage({APIEndpoint, APIEndpointImage, TeamId}: EditFormPageProps) {
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [formError, setFormError] = useState<string | null>(null);
+    const [formSuccess, setFormSuccess] = useState<string | null>(null);
+    const [isEditMode, setIsEditMode] = useState<boolean>(false);
+    const [colorMode, setColorMode] = useState<"light" | "dark">('dark');
+    const router = useRouter();
 
 
-function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) {
+    // Construct the API URL based on TeamId
+    const fetchAPIUrl = useMemo(
+        () => (TeamId ? `${APIEndpoint}?teamId=${TeamId}` : APIEndpoint),
+        [APIEndpoint, TeamId]
+    );
 
-    const [state, dispatch] = useReducer(formReducer, initialState);
-    const { Data, errors, isSubmitting, isLoading, editMode, ApiResponse, colorMode, useImageUrl, imagePreviewUrl } = state;
-    const router = useRouter(); // Initialize the router
+    const {
+        register,
+        handleSubmit,
+        control,
+        setValue,
+        formState: {errors, isSubmitting},
+        watch,
+        reset,
+    } = useForm<CareerFields>({
+        resolver: yupResolver(validationSchema),
+        defaultValues: {
+            title: '',
+            date: '',
+            content: '',
+            image: {
+                source: 'URL',
+                url: '',
+                file: [],
+                previewUrl: '',
+            },
+        },
+
+    });
 
 
+    const imageSource = watch('image.source');
 
+    const toggleColorMode = useCallback(() => {
+        setColorMode(prev => prev === 'light' ? 'dark' : 'light');
+    }, []);
 
-    // Log the current mode (edit or create)
+    // Watch the imageSource field to conditionally clear other fields
     useEffect(() => {
-        if (editMode) {
-            console.log("Mode: Edit");
-        } else {
-            console.log("Mode: Create");
+        if (imageSource === 'UPLOAD') {
+            setValue('image.url', '');
+        } else if (imageSource === 'URL') {
+            setValue('image.file', undefined);
         }
-    }, [editMode]);
+    }, [imageSource, setValue]);
 
 
+    // Fetch data on component mount or when APIEndpoint/TeamId changes
     useEffect(() => {
-        async function fetchData() {
+        const fetchData = async () => {
+            setFormError(null);
+
             try {
+                const response = await axios.get<EarlyLife>(fetchAPIUrl);
 
-                dispatch({ type: "SET_LOADING", value: true })
+                if (response.status === 200 && response.data) {
+                    const data = response.data;
+                    console.log('Fetched data:', data);
+                    // Populate the form with fetched data
+                    setValue("title", data.title);
+                    setValue("date", data.date || '');
+                    setValue("content", data.content);
+                    setValue("image.source", data.imageSource);
+                    setValue("image.url", data.imageUrl || '');
 
+                    setIsEditMode(true);
 
-                const getEndpoint = () => {
-                    return TeamId ? `${APIEndpoint}/${TeamId}` : `${APIEndpoint}`
-                }
+                    // Handle image preview based on source
+                    if (data.imageSource === 'UPLOAD') {
+                        // Fetch image blob from APIEndpointImage
+                        const imageResponse = await axios.get(APIEndpointImage, {
+                            responseType: 'blob',
+                        });
 
-                const endpoint = getEndpoint()
-                const response = await axios.get<Partial<CareerModel>>(endpoint)
-                const fetchedData = response.data
-
-                if (response.status!== 204 || !fetchedData) {
-                    // No data available -> Create mode
-                    dispatch({ type: 'TOGGLE_EDIT_MODE', value: false });
-                    dispatch({ type: 'SET_ERROR', field: 'form', value: 'No data available. Please create the entry.' });
-                    dispatch({ type: 'SET_LOADING', value: false });
-                    return;
+                        if (imageResponse.status === 200) {
+                            const blob = imageResponse.data;
+                            const previewUrl = URL.createObjectURL(blob);
+                            setValue('image.previewUrl', previewUrl);
+                        } else {
+                            setFormError('Failed to fetch uploaded image.');
+                        }
+                    }
                 } else {
-                    // Data available -> Edit mode
-                    dispatch({ type: 'TOGGLE_EDIT_MODE', value: true });
+                    // No data found; set to create mode
+                    setIsEditMode(false);
                 }
-
-                dispatch({ type: 'SET_FIELD', field: 'title', value: fetchedData.title ?? '' });
-                dispatch({ type: 'SET_FIELD', field: 'content', value: fetchedData.content ?? '' });
-                dispatch({ type: 'SET_FIELD', field: 'date', value: fetchedData.date ?? '' });
-                dispatch({ type: 'SET_FIELD', field: 'imageSource', value: fetchedData.imageSource ?? 'URL' });
-
-                if (fetchedData.imageSource === 'URL') {
-                    dispatch({ type: 'SET_FIELD', field: 'image', value: fetchedData.image ?? '' });
-                } else if (fetchedData.imageSource === 'UPLOAD' && fetchedData.imageType) {
-                    // Fetch the image using the dynamic APIEndpointImage
-                    const imageResponse = await axios.get(APIEndpointImage, {
-                        responseType: 'blob',
-                    });
-                    const imageBlob = imageResponse.data;
-                    dispatch({ type: 'SET_FIELD', field: 'imageData', value: imageBlob });
-                    dispatch({ type: 'SET_FIELD', field: 'imageType', value: fetchedData.imageType });
+            } catch (error: unknown) {
+                if (axios.isAxiosError(error)) {
+                    if (error.response && error.response.status === 404) {
+                        // Data not found; set to create mode
+                        setIsEditMode(false);
+                    } else {
+                        // Other Axios errors
+                        setFormError(error.response?.data?.message || 'Failed to fetch data');
+                        setIsEditMode(false);
+                    }
+                } else if (error instanceof Error) {
+                    // Non-Axios errors that are instances of Error
+                    setFormError(error.message || 'An unexpected error occurred');
+                    setIsEditMode(false);
+                } else {
+                    // Errors that are not AxiosErrors or Error instances
+                    setFormError('Something went wrong while fetching data');
+                    setIsEditMode(false);
                 }
-
-                dispatch({ type: 'SET_LOADING', value: false });
-
-            } catch (error) {
-                dispatch({ type: 'TOGGLE_EDIT_MODE', value: false });
-                console.error('Error fetching data: ', error);
-                dispatch({ type: 'SET_ERROR', field: 'form', value: 'Failed to fetch data. Please try again later.' });
-                dispatch({ type: 'SET_LOADING', value: false });
+            } finally {
+                setIsLoading(false);
             }
-            
+        };
+
+        if (APIEndpoint) {
+            fetchData();
         }
-        fetchData()
-    }, [APIEndpoint, APIEndpointImage, TeamId])
+    }, [fetchAPIUrl, APIEndpoint, TeamId, setValue, APIEndpointImage]);
 
+    // Clean up blob URLs to prevent memory leaks
+    const files = watch('image.file');
 
+    useEffect(() => {
+        let previewUrl: string | undefined;
 
-
-    const validateField = (formData: Partial<CareerModel>): Partial<Record<keyof CareerModel | 'image', string>> => {
-        const errors: Partial<Record<keyof CareerModel | 'image', string>> = {};
-
-        // Image validation first, before schema parsing
-        if (!editMode) { // Only validate image in create mode
-            if (useImageUrl && !formData.image) {
-                errors.image = 'Please provide a valid image URL.';
-            } else if (!useImageUrl && !formData.imageData) {
-                errors.image = 'Please upload an image.';
-            }
+        if (files && files[0]) {
+            previewUrl = URL.createObjectURL(files[0]);
+            setValue('image.previewUrl', previewUrl);
         }
 
-        // Now proceed with Zod validation
-        try {
-            console.log("validation mode: " + editMode);
+        return () => {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [files, setValue]);
 
-            // Choose schema based on mode
-            const schema = editMode ? storyFieldEditSchema : storyFieldCreateSchema;
+    const previewUrl = watch('image.previewUrl');
 
-            console.log("Form data before Zod validation:", formData);
+    useEffect(() => {
+        return () => {
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [previewUrl]);
 
-            // Validate the form data with Zod schema
-            schema.parse(formData);
 
-        } catch (error) {
-            if (error instanceof ZodError) {
-                console.log('Validation error from Zod:', error.flatten().fieldErrors);
+    const onSubmit = useCallback(
+        async (data: CareerFields) => {
+            try {
+                const formData = new FormData();
+                const method = isEditMode ? 'patch' : 'post';
 
-                const fieldErrors = error.flatten().fieldErrors;
+                formData.append('title', data.title);
+                formData.append('date', data.date);
+                formData.append('content', data.content);
+                formData.append('imageSource', data.image.source);
 
-                // Add Zod validation errors to the errors object
-                for (const key in fieldErrors) {
-                    if (fieldErrors[key] && fieldErrors[key].length > 0) {
-                        errors[key as keyof CareerModel] = fieldErrors[key][0];
+
+                // Append image data
+                if (data.image.source === 'UPLOAD') {
+                    if (data.image.file && data.image.file.length > 0 && data.image.file[0]) {
+                        formData.append('imageFile', data.image.file[0]);
+                    } else {
+                        // Handle the case where no file is selected
+                        throw new Error('No image file selected.');
+                    }
+                } else if (data.image.source === 'URL') {
+                    if (data.image.url) {
+                        formData.append('imageUrl', data.image.url);
+                    } else {
+                        // Handle the case where no URL is provided
+                        throw new Error('No image URL provided.');
                     }
                 }
+
+                // Proceed to send the formData to the backend
+                const response = await axios({
+                    method,
+                    url: fetchAPIUrl,
+                    data: formData,
+                });
+
+                // Handle the response
+                if (response.status === 200 || response.status === 201) {
+                    setFormSuccess('Form submitted successfully!');
+                    router.back()
+                    // Optionally, reset the form or redirect the user
+                } else {
+                    setFormError('Failed to submit form. Please try again.');
+                }
+
+
+            } catch (error: unknown) {
+
+                if (axios.isAxiosError(error)) {
+                    setFormError(error.response?.data?.message || 'Failed to submit form.');
+                } else if (error instanceof Error) {
+                    setFormError(error.message || 'An unexpected error occurred.');
+                } else {
+                    setFormError('Something went wrong while submitting the form.');
+                }
+
             }
-        }
-
-        console.error('Final validation errors:', errors);
-        return errors;
-    };
+        },
+        [fetchAPIUrl, isEditMode, router]
+    );
 
 
-
-
-
-    const handleFieldChange =  (field: keyof CareerModel, value: CareerModel[keyof CareerModel]) => {
-        dispatch({ type: 'SET_FIELD', field, value });
-
-        // Validate the field after updating it
-        const formData: Partial<CareerModel> = { ...state.Data, [field]: value };
-
-        const errors = validateField(formData);
-
-        // Update error state if there are any errors
-        if (errors && errors[field]) {
-            dispatch({ type: 'SET_ERROR', field, value: errors[field] });
-        } else {
-            // Clear the error for the field if validation passes
-            dispatch({ type: 'SET_ERROR', field, value: '' });
-        }
-
-
-    };
-
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const arrayBuffer = reader.result as ArrayBuffer;
-                const buffer = Buffer.from(arrayBuffer);
-                const imagePreviewUrl = reader.result as string; // Base64 preview
-                dispatch({type: 'SET_FIELD', field: 'imageData', value: buffer});
-                dispatch({type: 'SET_FIELD', field: 'imageType', value: file.type});
-                dispatch({type: 'SET_IMAGE_PREVIEW_URL', value: imagePreviewUrl});
-
-                // Clear the image error on successful upload
-                dispatch({type: 'SET_ERROR', field: 'image', value: ''});
-
-            };
-            reader.readAsDataURL(file); // Use DataURL for preview
-        } else {
-            console.log("No file selected");
-        }
-    }
-
-    const handleContentChange = (value: string | undefined) => {
-        handleFieldChange('content', value || '');  // Validate content field
-    };
-
-    const handleImageSourceChange = (value: string) => {
-        dispatch({ type: 'SET_IMAGE_SOURCE', value: value === 'url' });
-    };
-
-    // Function to handle discarding changes
-    const handleDiscardChanges = () => {
-        dispatch({ type: 'RESET_FORM' }); // Reset the form state
-        router.back(); // Redirect to the previous page
-    };
 
 
     return (
@@ -366,138 +251,189 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
             {isLoading ? (
                 <LoadingSkeleton/>
             ) : (
-                <Box className="shadow-md rounded-lg p-8 w-full max-w-3xl bg-gray-900">
-                    {errors.form && (
-                        <Text as="p" className="text-red-500 mb-4">
-                            {errors.form}
+                <Box
+                    className={`shadow-md rounded-lg p-8 w-full max-w-3xl ${colorMode === 'dark' ? 'bg-gray-900' : 'bg-gray-700'}`}>
+                    {/* Form Mode Indicator */}
+                    {isEditMode ? (
+                        <Heading as="h2" size="4" className="text-2xl font-semibold text-green-500 mb-4">
+                            Edit Career Entry
+                        </Heading>
+                    ) : (
+                        <Heading as="h2" size="4" className="text-2xl font-semibold text-blue-500 mb-4">
+                            Create New Career Entry
+                        </Heading>
+                    )}
+
+                    {/* Display Form Error or Success Message */}
+
+                    {formSuccess && (
+                        <Text as="p" className='mb-4  text-green-500'>
+                            {formSuccess}
                         </Text>
                     )}
-                    <form className="space-y-6" onSubmit={() => {}}>
+                    {formError && (
+                        <Text as="p" className='mb-4 text-red-500'>
+                            {formError}
+                        </Text>
+                    )}
+
+                    <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
                         {/* Title Field */}
                         <Box>
-                            <Heading as="h1" size="4" className="text-4xl font-bold text-primary mb-4">
+                            <Heading as="h3" size="4" className="text-4xl font-bold text-primary mb-4">
                                 Title
                             </Heading>
                             <TextField.Root
                                 id="title"
-                                name="title"
                                 type="text"
                                 placeholder="Enter title"
-                                value={Data.title}
-                                onChange={(e) => handleFieldChange('title', e.target.value)}
+                                {...register("title")}
                                 className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                     colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                 }`}
                             />
-
                             {errors.title && (
                                 <Text as="p" className="text-red-500 mt-2">
-                                    {errors.title}
+                                    {errors.title.message}
                                 </Text>
                             )}
                         </Box>
 
                         {/* Date Field */}
                         <Box>
-                            <Heading as="h1" size="4" className="text-4xl font-bold text-primary mb-4">
+                            <Heading as="h3" size="4" className="text-4xl font-bold text-primary mb-4">
                                 Date
                             </Heading>
                             <TextField.Root
                                 id="date"
-                                name="date"
-                                type="text"
+                                type="date"
                                 placeholder="Enter date"
-                                value={Data.date || ''}
-                                onChange={(e) => handleFieldChange('date', e.target.value)}
+                                {...register('date')}
                                 className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                     colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                 }`}
                             />
                             {errors.date && (
                                 <Text as="p" className="text-red-500 mt-2">
-                                    {errors.date}
+                                    {errors.date.message}
                                 </Text>
                             )}
                         </Box>
 
                         {/* Image Source Selection */}
                         <Box>
-                            <Heading as="h1" size="4" className="font-bold text-primary mb-4">
+                            <Heading as="h3" size="4" className="font-bold text-primary mb-4">
                                 Select Image Source
                             </Heading>
-                            <RadioGroup.Root
-                                value={useImageUrl ? 'url' : 'upload'}
-                                onValueChange={handleImageSourceChange}
-                                aria-label="Image Source"
-                                className="flex flex-row gap-4"
-                            >
-                                <Flex align="center">
-                                    <RadioGroup.Item value="url" id="image-url-option"/>
-                                    <label htmlFor="image-url-option" className="ml-2 text-gray-200 cursor-pointer">
-                                        Use Image URL
-                                    </label>
-                                </Flex>
-                                <Flex align="center">
-                                    <RadioGroup.Item value="upload" id="image-upload-option"/>
-                                    <label htmlFor="image-upload-option" className="ml-2 text-gray-200 cursor-pointer">
-                                        Upload Image
-                                    </label>
-                                </Flex>
-                            </RadioGroup.Root>
+                            <Controller
+                                control={control}
+                                name="image.source"
+                                defaultValue="URL" // Set a default value to ensure it's defined
+                                render={({field}) => (
+                                    <RadioGroup.Root
+                                        value={field.value}
+                                        onValueChange={(value: 'URL' | 'UPLOAD') => {
+                                            field.onChange(value);
+                                            // Update any other states or side effects here if necessary
+                                        }}
+                                        aria-label="Image Source"
+                                        className="flex flex-row gap-4"
+                                    >
+                                        <Flex align="center">
+                                            <RadioGroup.Item value="URL" id="image-url-option"/>
+                                            <label htmlFor="image-url-option"
+                                                   className="ml-2 text-gray-200 cursor-pointer">
+                                                Use Image URL
+                                            </label>
+                                        </Flex>
+                                        <Flex align="center">
+                                            <RadioGroup.Item value="UPLOAD" id="image-upload-option"/>
+                                            <label htmlFor="image-upload-option"
+                                                   className="ml-2 text-gray-200 cursor-pointer">
+                                                Upload Image
+                                            </label>
+                                        </Flex>
+                                    </RadioGroup.Root>
+                                )}
+                            />
+                            {errors.image?.source && (
+                                <Text as="p" className="text-red-500 mt-2">
+                                    {errors.image.source.message}
+                                </Text>
+                            )}
                         </Box>
 
                         {/* Conditionally Render Image Input Fields */}
-                        {useImageUrl ? (
+                        {imageSource === 'URL' ? (
                             <Box>
-                                <Heading as="h1" size="4" className="font-bold text-primary mb-4">
+                                <Heading as="h3" size="4" className="font-bold text-primary mb-4">
                                     Image URL
                                 </Heading>
                                 <TextField.Root
                                     id="imageUrl"
-                                    name="imageUrl"
                                     type="text"
+                                    {...register("image.url")}
                                     placeholder="Enter image URL"
-                                    value={Data.image || ''}
-                                    onChange={(e) => {handleFieldChange('image', e.target.value); }}
                                     className={`mt-1 block w-full border rounded-md shadow-sm p-2 focus:outline-none focus:ring-primary focus:border-primary transition-colors duration-300 ${
                                         colorMode === 'dark' ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-300'
                                     }`}
                                 />
-                                {errors.image && (
+                                {errors.image?.url && (
                                     <Text as="p" className="text-red-500 mt-2">
-                                        {errors.image}
+                                        {errors.image.url.message}
                                     </Text>
                                 )}
                             </Box>
                         ) : (
                             <Box>
-                                <Heading as="h1" size="4" className="font-bold text-primary mb-4">
+                                <Heading as="h3" size="4" className="font-bold text-primary mb-4">
                                     Upload Image
                                 </Heading>
                                 <label htmlFor="imageFile" className="block text-sm font-medium text-gray-200">
                                     Choose an image to upload
                                 </label>
-                                <input
-                                    id="imageFile"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    className="mt-1 block w-full text-white"
+                                <Controller
+                                    control={control}
+                                    name="image.file"
+                                    render={({field}) => (
+                                        <>
+                                            <input
+                                                id="imageFile"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => {
+                                                    // Convert FileList to an array
+                                                    const files = e.target.files ? Array.from(e.target.files) : [];
+                                                    field.onChange(files); // Pass the array to the form state
+
+                                                    // Generate a preview URL
+                                                    if (files && files[0]) {
+                                                        const previewUrl = URL.createObjectURL(files[0]);
+                                                        setValue('image.previewUrl', previewUrl);
+                                                    }
+                                                }}
+                                                className={`mt-1 block w-full ${
+                                                    colorMode === 'dark' ? 'text-white' : 'text-gray-700'
+                                                }`}
+                                            />
+                                            {errors.image?.file && (
+                                                <Text as="p" id="image-file-error" className="text-red-500 mt-2">
+                                                    {errors.image.file.message}
+                                                </Text>
+                                            )}
+                                        </>
+                                    )}
                                 />
-                                {errors.image && (
-                                    <Text as="p" className="text-red-500 mt-2">
-                                        {errors.image}
-                                    </Text>
-                                )}
                             </Box>
                         )}
 
                         {/* Image Preview */}
                         <Box className="mt-4">
                             <RenderImagePreview
-                                imageUrl={useImageUrl ? Data.image : undefined}
-                                imageError={errors.image}
-                                imagePreviewUrl={imagePreviewUrl}
+                                imageSource={imageSource}
+                                imageUrl={watch('image.url')}
+                                imagePreviewUrl={watch('image.previewUrl')}
+                                imageError={errors.image?.url?.message || errors.image?.file?.message}
                                 colorMode={colorMode}
                             />
                         </Box>
@@ -506,7 +442,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                         <Box>
                             {/* Switch and Labels */}
                             <Flex className="items-center mb-4" justify="between" align="center">
-                                <Heading as="h1" size="4" className="font-bold text-primary mb-2">
+                                <Heading as="h3" size="4" className="font-bold text-primary mb-2">
                                     Content
                                 </Heading>
                                 <Box className="flex items-center">
@@ -516,7 +452,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                                     <Switch
                                         id="color-mode-switch"
                                         checked={colorMode === 'dark'}
-                                        onCheckedChange={() => dispatch({ type: 'SET_COLOR_MODE', value: colorMode === 'light' ? 'dark' : 'light' })}
+                                        onCheckedChange={toggleColorMode}
                                         className="items-center"
                                     />
                                     <Text as="span" className="ml-2 text-primary">
@@ -525,22 +461,29 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                                 </Box>
                             </Flex>
                             {/* Markdown Editor */}
-                            <DynamicReactMDEditor
-                                value={Data.content || ''}
-                                onChange={handleContentChange}
-                                colorMode={colorMode}
+                            <Controller
+                                control={control}
+                                name="content"
+                                render={({field}) => (
+                                    <DynamicReactMDEditor
+                                        {...field}
+                                        colorMode={colorMode}
+                                        onChange={(value) => field.onChange(value)}
+                                    />
+                                )}
                             />
                             {errors.content && (
                                 <Text as="p" className="text-red-500 mt-2">
-                                    {errors.content}
+                                    {errors.content.message}
                                 </Text>
                             )}
                         </Box>
 
                         {/* Form-Level Error Message */}
-                        {errors.form && (
-                            <Text as="p" className="text-red-500 mt-4">
-                                {errors.form}
+                        {formError && (
+                            <Text as="p"
+                                  className={`mt-4 ${formError === "Form submitted successfully!" ? 'text-green-500' : 'text-red-500'}`}>
+                                {formError}
                             </Text>
                         )}
 
@@ -572,7 +515,7 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
                                             </Button>
                                         </AlertDialog.Cancel>
                                         <AlertDialog.Action>
-                                            <Button variant="solid" color="red" onClick={handleDiscardChanges}>
+                                            <Button variant="solid" color="red" onClick={() => { reset(); router.back() }}>
                                                 Discard Changes
                                             </Button>
                                         </AlertDialog.Action>
@@ -597,4 +540,5 @@ function EditFormPage({ APIEndpoint, APIEndpointImage, TeamId }: EditFormProps) 
     )
 }
 
-export default EditFormPage
+export default EditFormPage;
+

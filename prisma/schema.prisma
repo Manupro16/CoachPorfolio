@@ -1,5 +1,3 @@
-// schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,12 +12,10 @@ enum ImageSource {
   UPLOAD
 }
 
-// schema.prisma
-
 model EarlyLife {
-  id          Int         @id @default(autoincrement())
+  id          Int         @id
   imageSource ImageSource
-  image       String? // URL of the image if imageSource is 'URL'
+  imageUrl    String? // URL of the image if imageSource is 'URL'
   imageData   Bytes? // Binary data of the image if imageSource is 'UPLOAD'
   imageType   String? // MIME type of the image if imageSource is 'UPLOAD'
   title       String
@@ -30,7 +26,7 @@ model EarlyLife {
 model PlayerCareer {
   id          Int         @id @default(autoincrement())
   imageSource ImageSource
-  image       String? // URL of the image if imageSource is 'URL'
+  imageUrl    String? // URL of the image if imageSource is 'URL'
   imageData   Bytes? // Binary data of the image if imageSource is 'UPLOAD'
   imageType   String? // MIME type of the image if imageSource is 'UPLOAD'
   title       String
@@ -41,7 +37,7 @@ model PlayerCareer {
 model CoachingCareer {
   id          Int         @id @default(autoincrement())
   imageSource ImageSource
-  image       String? // URL of the image if imageSource is 'URL'
+  imageUrl    String? // URL of the image if imageSource is 'URL'
   imageData   Bytes? // Binary data of the image if imageSource is 'UPLOAD'
   imageType   String? // MIME type of the image if imageSource is 'UPLOAD'
   title       String

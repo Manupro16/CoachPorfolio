@@ -5,30 +5,27 @@ import { Box, Text } from "@radix-ui/themes";
 import React from "react";
 
 interface ImagePreviewProps {
-    imageUrl?: string | null ;
+    imageSource: 'URL' | 'UPLOAD';
+    imageUrl?: string | null;
     imageError?: string | null;
     imagePreviewUrl?: string; // Optional prop for pre-rendering images
     colorMode: 'light' | 'dark';
 }
 
-const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError, imagePreviewUrl, colorMode }) => {
-
+const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageSource, imageUrl, imageError, imagePreviewUrl, colorMode }) => {
     let previewUrl = '';
 
-    // console.log('Image URL:', imageUrl);
-    // console.log('Image Preview URL:', imagePreviewUrl);
-
-    if (imageUrl) {
+    if (imageSource === 'URL' && imageUrl) {
         previewUrl = imageUrl;
-    } else if (imagePreviewUrl) {
+    } else if (imageSource === 'UPLOAD' && imagePreviewUrl) {
         previewUrl = imagePreviewUrl;
     }
 
     if (!previewUrl) {
         return (
-            <Box className={`w-full max-w-md h-48 flex items-center justify-center rounded-md shadow-sm ${colorMode == "dark" ? "bg-gray-600" : "bg-gray-200"}`}>
+            <Box className={`w-full max-w-md h-48 flex items-center justify-center rounded-md shadow-sm ${colorMode === "dark" ? "bg-gray-600" : "bg-gray-200"}`}>
                 <Text as="p" className="text-gray-500">
-                    Enter an image URL to preview.
+                    Enter an image URL or upload an image to preview.
                 </Text>
             </Box>
         );
@@ -54,4 +51,3 @@ const RenderImagePreview: React.FC<ImagePreviewProps> = ({ imageUrl, imageError,
 };
 
 export default RenderImagePreview;
-

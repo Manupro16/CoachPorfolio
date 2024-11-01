@@ -21,8 +21,8 @@ async function StoryPage() {
     // Determine the image source for EarlyLifeSection
     let imageSrc = '';
     if (earlyLife) {
-        if (earlyLife.imageSource === 'URL' && earlyLife.image) {
-            imageSrc = earlyLife.image;  // Use image URL from the database
+        if (earlyLife.imageSource === 'URL' && earlyLife.imageUrl) {
+            imageSrc = earlyLife.imageUrl;  // Use image URL from the database
         } else if (earlyLife.imageSource === 'UPLOAD' && earlyLife.imageData) {
             imageSrc = '/api/story/early-life/image';  // Use API endpoint for uploaded image
         }
