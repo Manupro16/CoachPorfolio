@@ -11,6 +11,7 @@ import {
 import Image from 'next/image';
 
 interface Team {
+    id: number;
     name: string;
     image: string;
     dates: string;

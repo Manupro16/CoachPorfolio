@@ -5,7 +5,7 @@ import {Box, Grid,} from '@radix-ui/themes';
 import IntroductionSection from "@/app/story/IntroductionSection";
 import ClosingSection from "@/app/story/ClosingSection";
 import NoDataWarning from "@/app/story/NoDataWarning";
-import { prisma } from "@/lib/prisma";
+import {prisma} from "@/lib/prisma";
 import EarlyLifeSection from "@/app/story/EarlyLifeSection";
 import CareerSection from './CareerSection';
 
@@ -13,9 +13,9 @@ async function StoryPage() {
 
     // Fetch data in parallel
     const [earlyLife, playerCareers, coachingCareers] = await Promise.all([
-        prisma.earlyLife.findUnique({ where: { id: 1 } }),
-        prisma.playerCareer.findMany({ orderBy: { id: 'asc' } }),
-        prisma.coachingCareer.findMany( { orderBy: { id: 'asc' } }),
+        prisma.earlyLife.findUnique({where: {id: 1}}),
+        prisma.playerCareer.findMany({orderBy: {id: 'asc'}}),
+        prisma.coachingCareer.findMany({orderBy: {id: 'asc'}}),
     ]);
 
     // Determine the image source for EarlyLifeSection
@@ -76,16 +76,28 @@ async function StoryPage() {
                         headerImage="/pic/chuyVeraSeleccion_2.jpg"
                         ObjectPosition="top"
                         subtitle="Discover the journey of Coach Vera as a professional soccer player."
-                        teams={playerCareers.map((career) => ({
-                            name: career.title,
-                            image: career.image,
-                            imageSource: career.imageSource,
-                            dates: career.date,
-                            description: career.content,
-                        }))}
+                        teams={playerCareers.map((career) => {
+                            let image: string;
+                            if (career.imageSource === 'URL' && career.imageUrl) {
+                                image = career.imageUrl;
+                            } else if (career.imageSource === 'UPLOAD' && career.imageData) {
+                                image = `/api/story/player-career/image/${career.id}`;
+                            } else {
+                                image = '/default-placeholder-image.jpg'; // Fallback image
+                            }
+
+                            return {
+                                id: career.id,
+                                name: career.title,
+                                image: image,
+                                dates: career.date,
+                                description: career.content,
+                            };
+                        })}
+
                     />
                 ) : (
-                    <NoDataWarning ChildrenComponentName="PlayerCareer" />
+                    <NoDataWarning ChildrenComponentName="PlayerCareer"/>
                 )}
 
 
@@ -96,16 +108,29 @@ async function StoryPage() {
                         subtitle="Explore the impactful coaching journey of Coach Vera."
                         headerImage="/pic/Chuy-Vera1.webp"
                         ObjectPosition="center"
-                        teams={coachingCareers.map((career) => ({
-                            name: career.title,
-                            image: career.image,
-                            imageSource: career.imageSource,
-                            dates: career.date,
-                            description: career.content,
-                        }))}
+                        teams={coachingCareers.map((career) => {
+                            let image: string;
+                            if (career.imageSource === 'URL' && career.imageUrl) {
+                                image = career.imageUrl;
+                            } else if (career.imageSource === 'UPLOAD' && career.imageData) {
+                                image = `/api/story/coaching-career/image/${career.id}`;
+                            } else {
+                                image = '/default-placeholder-image.jpg'; // Fallback image
+                            }
+
+                            return {
+                                id: career.id,
+                                name: career.title,
+                                image: image,
+                                dates: career.date,
+                                description: career.content,
+                            };
+                        })}
+
+
                     />
                 ) : (
-                    <NoDataWarning ChildrenComponentName="CoachingCareer" />
+                    <NoDataWarning ChildrenComponentName="CoachingCareer"/>
                 )}
 
                 {/* Closing Section */}

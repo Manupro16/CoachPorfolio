@@ -10,9 +10,9 @@ import Image from 'next/image';
 import TeamSection from './TeamSection';
 
 interface Team {
+    id: number;
     name: string;
-    image: string | null;
-    imageSource: 'URL' | 'UPLOAD'; // New field to determine image source
+    image: string
     dates: string;
     description: string;
 }
@@ -32,17 +32,6 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                                                          ObjectPosition,
                                                          teams,
                                                      }) => {
-
-    // Determine image source based on whether it's a URL or an uploaded file
-    const getImageSrc = (team: Team) => {
-        if (team.imageSource === 'URL' && team.image) {
-            return team.image; // Use image URL from the database
-        } else if (team.imageSource === 'UPLOAD') {
-            return `/api/story/career/image/${team.name}`; // Use API endpoint for uploaded image
-        }
-        return '/default-placeholder-image.jpg'; // Fallback image in case of no image
-    };
-
 
 
     return (
@@ -76,7 +65,7 @@ const CareerSection: React.FC<CareerSectionProps> = ({
 
             {/* Teams */}
             {teams.map((team, index) => (
-                <TeamSection key={index} team={{ ...team, image: getImageSrc(team) }} />
+                <TeamSection key={index} team={team} />
             ))}
         </Box>
     );
