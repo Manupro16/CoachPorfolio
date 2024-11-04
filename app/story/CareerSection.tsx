@@ -1,9 +1,9 @@
 import React from 'react';
 import {
     AspectRatio,
-    Box,
+    Box, Button,
     Flex,
-    Heading,
+    Heading, Link,
     Text,
 } from '@radix-ui/themes';
 import Image from 'next/image';
@@ -44,14 +44,19 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                         alt={title}
                         fill
                         className="rounded-lg"
-                        style={{ filter: 'brightness(0.75) opacity(0.9)', objectFit: 'cover', objectPosition: ObjectPosition,   }}
+                        style={{
+                            filter: 'brightness(0.75) opacity(0.9)',
+                            objectFit: 'cover',
+                            objectPosition: ObjectPosition,
+                        }}
                     />
-                    <Box className="absolute inset-0 bg-black bg-opacity-50 rounded-lg" />
+                    <Box className="absolute inset-0 bg-black bg-opacity-50 rounded-lg"/>
                     <Flex
                         direction="column"
                         align="center"
                         justify="center"
                         className="absolute inset-0 text-center text-white px-4"
+                        gapY="2"
                     >
                         <Heading as="h2" size="7" className="font-bold text-primary">
                             {title}
@@ -59,13 +64,19 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                         <Text as="p" size="4" className="mt-2 max-w-md">
                             {subtitle}
                         </Text>
+                        <Link href="/story/edit/PlayerStory/create">
+                            <Button variant="solid" size="1">
+                                Add Team
+                            </Button>
+                        </Link>
                     </Flex>
                 </AspectRatio>
+
             </Box>
 
             {/* Teams */}
             {teams.map((team, index) => (
-                <TeamSection key={index} team={team} />
+                <TeamSection key={index} team={team}/>
             ))}
         </Box>
     );

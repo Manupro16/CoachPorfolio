@@ -2,7 +2,7 @@
 
 import {NextResponse} from 'next/server';
 import {prisma} from '@/lib/prisma';
-import {serverStorySchema} from '@/app/api/story/early-life/serverStorySchema';
+import {serverStorySchema} from '@/app/api/story/validation/serverStorySchema';
 import {Prisma} from "@prisma/client";
 import * as yup from 'yup';
 
@@ -34,9 +34,9 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const title = formData.get('title')?.toString() || '';
-    const content = formData.get('content')?.toString() || '';
     const date = formData.get('date')?.toString() || '';
     const imageSource = formData.get('imageSource')?.toString() as 'URL' | 'UPLOAD';
+    const content = formData.get('content')?.toString() || '';
 
     // Correct the field name for the image
     const imageField = imageSource === 'UPLOAD' ? formData.get('imageFile') : formData.get('imageUrl');

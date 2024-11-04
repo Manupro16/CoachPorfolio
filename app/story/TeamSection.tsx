@@ -2,10 +2,10 @@ import React from 'react';
 import {
     AspectRatio,
     Badge,
-    Box,
+    Box, Button,
     Flex,
     Grid,
-    Heading,
+    Heading, Link,
     Text,
 } from '@radix-ui/themes';
 import Image from 'next/image';
@@ -22,7 +22,7 @@ interface TeamSectionProps {
     team: Team;
 }
 
-const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
+const TeamSection: React.FC<TeamSectionProps> = ({team}) => {
 
     const textThreshold = 1900; // Adjust as needed
 
@@ -41,9 +41,12 @@ const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
         textThreshold
     );
 
+
+    const EditEndpoint  = `/story/edit/PlayerStory/${team.id}`;
+
     return (
         <Grid
-            columns={{ initial: '1fr', md: '1fr 1fr' }}
+            columns={{initial: '1fr', md: '1fr 1fr'}}
             gapX="5"
             gapY="1"
             align="start"
@@ -56,7 +59,7 @@ const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
             {/* Image Section */}
             <Box>
                 <AspectRatio
-                    ratio={16 / 9}
+                    ratio={13 / 9}
                     className="transform transition-transform duration-200 hover:scale-105"
                 >
                     <Box className="relative w-full h-full">
@@ -64,7 +67,7 @@ const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
                             src={team.image}
                             alt={team.name}
                             fill
-                            style={{ objectFit: 'cover' }}
+                            style={{objectFit: 'cover'}}
                             className="rounded-lg"
                             priority
                         />
@@ -75,12 +78,21 @@ const TeamSection: React.FC<TeamSectionProps> = ({ team }) => {
             {/* Text Section */}
             <Box>
                 <Flex direction="column" gap="2">
-                    <Flex align="center" gap="2">
-                        <Heading as="h3" size="5" className="text-primary">
-                            {team.name}
-                        </Heading>
-                        <Badge color="blue">{team.dates}</Badge>
+                    <Flex justify="between" align="center" gap="4" direction="row" className="pr-6">
+                        <Flex as="div" align="center" gap="2">
+                            <Heading as="h3" size="5" className="text-primary">
+                                {team.name}
+                            </Heading>
+                            <Badge color="blue">{team.dates}</Badge>
+                        </Flex>
+
+                        <Link href={EditEndpoint}>
+                            <Button variant="solid" size="1" >
+                                Edit Team
+                            </Button>
+                        </Link>
                     </Flex>
+
                     <Text
                         as="p"
                         size="3"

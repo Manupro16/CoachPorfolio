@@ -23,7 +23,7 @@ function NavBar(): JSX.Element {
     ];
 
     return (
-        <nav className="bg-gradient-to-r from-gray-900 via-black to-gray-900 border-b border-gray-700 px-10 py-4 shadow-lg">
+        <nav className="bg-gradient-to-r from-gray-900 via-black to-gray-900 border-b border-gray-700 px-10  py-4  shadow-lg ">
             <Grid columns="2" rows="1" gap="3">
                 <Flex direction="row" align="center" justify="start">
                     <Box as="div">

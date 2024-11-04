@@ -6,7 +6,7 @@ import RenderImagePreview from './ImagePreview';
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import dynamic from "next/dynamic";
 import {Controller, useForm} from "react-hook-form";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import axios from 'axios';
 import {yupResolver} from "@hookform/resolvers/yup";
 import {validationSchema} from "@/app/story/edit/validationSchemas/validationSchema";
@@ -24,10 +24,11 @@ const DynamicReactMDEditor = dynamic(() => import('@/components/DynamicReactMDEd
 interface EditFormPageProps {
     APIEndpoint: string;
     APIEndpointImage: string;
-    TeamId?: number;
+    TeamId?: string | undefined;
+    AddNewData?: boolean;
 }
 
-function EditFormPage({APIEndpoint, APIEndpointImage, TeamId}: EditFormPageProps) {
+function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditFormPageProps) {
 
     const [isLoading, setIsLoading] = useState(true);
     const [formError, setFormError] = useState<string | null>(null);
@@ -36,12 +37,6 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId}: EditFormPageProps
     const [colorMode, setColorMode] = useState<"light" | "dark">('dark');
     const router = useRouter();
 
-
-    // Construct the API URL based on TeamId
-    const fetchAPIUrl = useMemo(
-        () => (TeamId ? `${APIEndpoint}?teamId=${TeamId}` : APIEndpoint),
-        [APIEndpoint, TeamId]
-    );
 
     const {
         register,
@@ -90,39 +85,53 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId}: EditFormPageProps
             setFormError(null);
 
             try {
-                const response = await axios.get<EarlyLife>(fetchAPIUrl);
 
-                if (response.status === 200 && response.data) {
-                    const data = response.data;
-                    console.log('Fetched data:', data);
-                    // Populate the form with fetched data
-                    setValue("title", data.title);
-                    setValue("date", data.date || '');
-                    setValue("content", data.content);
-                    setValue("image.source", data.imageSource);
-                    setValue("image.url", data.imageUrl || '');
 
-                    setIsEditMode(true);
+                if (!AddNewData) {
+                    console.log(APIEndpoint);
 
-                    // Handle image preview based on source
-                    if (data.imageSource === 'UPLOAD') {
-                        // Fetch image blob from APIEndpointImage
-                        const imageResponse = await axios.get(APIEndpointImage, {
-                            responseType: 'blob',
-                        });
+                    const response = await axios.get<EarlyLife>(APIEndpoint);
 
-                        if (imageResponse.status === 200) {
-                            const blob = imageResponse.data;
-                            const previewUrl = URL.createObjectURL(blob);
-                            setValue('image.previewUrl', previewUrl);
-                        } else {
-                            setFormError('Failed to fetch uploaded image.');
+
+                    if (response.status === 200 && response.data) {
+                        const data = response.data;
+                        console.log('Fetched data:', data);
+                        // Populate the form with fetched data
+                        setValue("title", data.title);
+                        setValue("date", data.date || '');
+                        setValue("content", data.content);
+                        setValue("image.source", data.imageSource);
+                        setValue("image.url", data.imageUrl || '');
+
+                        setIsEditMode(true);
+
+                        // Handle image preview based on source
+                        if (data.imageSource === 'UPLOAD') {
+                            // Fetch image blob from APIEndpointImage
+                            const imageResponse = await axios.get(APIEndpointImage, {
+                                responseType: 'blob',
+                            });
+
+                            if (imageResponse.status === 200) {
+                                const blob = imageResponse.data;
+                                const previewUrl = URL.createObjectURL(blob);
+                                setValue('image.previewUrl', previewUrl);
+                            } else {
+                                setFormError('Failed to fetch uploaded image.');
+                            }
                         }
+                    } else {
+                        // No data found; set to create mode
+                        setIsEditMode(false);
+                        setIsLoading(false);
                     }
+
                 } else {
-                    // No data found; set to create mode
+                    // No APIEndpoint provided; set to create mode
                     setIsEditMode(false);
+                    setIsLoading(false);
                 }
+
             } catch (error: unknown) {
                 if (axios.isAxiosError(error)) {
                     if (error.response && error.response.status === 404) {
@@ -147,10 +156,9 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId}: EditFormPageProps
             }
         };
 
-        if (APIEndpoint) {
-            fetchData();
-        }
-    }, [fetchAPIUrl, APIEndpoint, TeamId, setValue, APIEndpointImage]);
+        fetchData();
+
+    }, [APIEndpoint, setValue, APIEndpointImage, AddNewData]);
 
     // Clean up blob URLs to prevent memory leaks
     const files = watch('image.file');
@@ -213,14 +221,14 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId}: EditFormPageProps
                 // Proceed to send the formData to the backend
                 const response = await axios({
                     method,
-                    url: fetchAPIUrl,
+                    url: APIEndpoint,
                     data: formData,
                 });
 
                 // Handle the response
                 if (response.status === 200 || response.status === 201) {
                     setFormSuccess('Form submitted successfully!');
-                    router.back()
+                    router.push('/story');
                     // Optionally, reset the form or redirect the user
                 } else {
                     setFormError('Failed to submit form. Please try again.');
@@ -239,10 +247,32 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId}: EditFormPageProps
 
             }
         },
-        [fetchAPIUrl, isEditMode, router]
+        [APIEndpoint, isEditMode, router]
     );
 
+    const deleteData = useCallback(async () => {
+        try {
+            const response = await axios.delete(APIEndpoint);
 
+            // Handle the response
+            if (response.status === 204) {
+                setFormSuccess('Data deleted successfully!');
+                router.back()
+                // Optionally, reset the form or redirect the user
+            } else {
+                setFormError('Failed to delete data. Please try again.');
+            }
+
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                setFormError(error.response?.data?.message || 'Failed to delete data.');
+            } else if (error instanceof Error) {
+                setFormError(error.message || 'An unexpected error occurred.');
+            } else {
+                setFormError('Something went wrong while deleting the data.');
+            }
+        }
+    }, [APIEndpoint, TeamId, router]);
 
 
     return (
@@ -254,15 +284,46 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId}: EditFormPageProps
                 <Box
                     className={`shadow-md rounded-lg p-8 w-full max-w-3xl ${colorMode === 'dark' ? 'bg-gray-900' : 'bg-gray-700'}`}>
                     {/* Form Mode Indicator */}
-                    {isEditMode ? (
-                        <Heading as="h2" size="4" className="text-2xl font-semibold text-green-500 mb-4">
-                            Edit Career Entry
-                        </Heading>
-                    ) : (
-                        <Heading as="h2" size="4" className="text-2xl font-semibold text-blue-500 mb-4">
-                            Create New Career Entry
-                        </Heading>
-                    )}
+                    <Flex as="div" justify="between">
+                        {isEditMode ? (
+                            <>
+                                <Heading as="h2" size="4" className="text-2xl font-semibold text-green-500 mb-4">
+                                    Edit Career Entry
+                                </Heading>
+                                {TeamId && (
+                                    <AlertDialog.Root>
+                                        <AlertDialog.Trigger>
+                                            <Button color="red">Delete Data</Button>
+                                        </AlertDialog.Trigger>
+                                        <AlertDialog.Content maxWidth="450px">
+                                            <AlertDialog.Title>Delete Data</AlertDialog.Title>
+                                            <AlertDialog.Description size="2">
+                                                Are you sure? This information will no longer be accessible and any
+                                                existing information will be deleted.
+                                            </AlertDialog.Description>
+
+                                            <Flex gap="3" mt="4" justify="end">
+                                                <AlertDialog.Cancel>
+                                                    <Button variant="soft" color="gray">
+                                                        Cancel
+                                                    </Button>
+                                                </AlertDialog.Cancel>
+                                                <AlertDialog.Action>
+                                                    <Button variant="solid" color="red" onClick={deleteData}>
+                                                        Delete Data
+                                                    </Button>
+                                                </AlertDialog.Action>
+                                            </Flex>
+                                        </AlertDialog.Content>
+                                    </AlertDialog.Root>
+                                )}
+                            </>
+                        ) : (
+                            <Heading as="h2" size="4" className="text-2xl font-semibold text-blue-500 mb-4">
+                                Create New Career Entry
+                            </Heading>
+                        )}
+                    </Flex>
 
                     {/* Display Form Error or Success Message */}
 
@@ -515,7 +576,10 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId}: EditFormPageProps
                                             </Button>
                                         </AlertDialog.Cancel>
                                         <AlertDialog.Action>
-                                            <Button variant="solid" color="red" onClick={() => { reset(); router.back() }}>
+                                            <Button variant="solid" color="red" onClick={() => {
+                                                reset();
+                                                router.back()
+                                            }}>
                                                 Discard Changes
                                             </Button>
                                         </AlertDialog.Action>

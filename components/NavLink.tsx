@@ -1,6 +1,7 @@
 import React from "react";
 import {usePathname} from "next/navigation";
 import Link from "next/link";
+import {Flex} from "@radix-ui/themes";
 
 export interface NavLink {
     href: string;
@@ -15,11 +16,11 @@ const getActiveLinkClasses = (isActive: boolean): string =>
     `${linkClasses} ${isActive ? 'font-bold text-gray-100 border-b-2 border-blue-400' : 'font-medium'} `;
 
 
-const NavLinks: React.FC<{ links: NavLink[] }> = ({ links }: { links: NavLink[] }): JSX.Element => {
+const NavLinks: React.FC<{ links: NavLink[] }> = ({links}: { links: NavLink[] }): JSX.Element => {
     const currentPath = usePathname();
 
     return (
-        <ul className="flex list-none p-0 gap-6">
+        <ul className=" flex list-none p-0 gap-6">
             {links.map((link) => (
                 <li key={link.href} className="flex items-center">
                     <Link

@@ -81,7 +81,7 @@ async function StoryPage() {
                             if (career.imageSource === 'URL' && career.imageUrl) {
                                 image = career.imageUrl;
                             } else if (career.imageSource === 'UPLOAD' && career.imageData) {
-                                image = `/api/story/player-career/image/${career.id}`;
+                                image = `/api/story/player-story/${career.id}/image`;
                             } else {
                                 image = '/default-placeholder-image.jpg'; // Fallback image
                             }
@@ -97,7 +97,7 @@ async function StoryPage() {
 
                     />
                 ) : (
-                    <NoDataWarning ChildrenComponentName="PlayerCareer"/>
+                    <NoDataWarning ChildrenComponentName="PlayerStory" TeamId="create"/>
                 )}
 
 
@@ -130,7 +130,7 @@ async function StoryPage() {
 
                     />
                 ) : (
-                    <NoDataWarning ChildrenComponentName="CoachingCareer"/>
+                    <NoDataWarning ChildrenComponentName="CoachingCareer" TeamId="create"/>
                 )}
 
                 {/* Closing Section */}

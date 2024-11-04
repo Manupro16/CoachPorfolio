@@ -2,10 +2,10 @@
 
 import * as yup from 'yup';
 
-export const serverStorySchema = yup.object({
+export const serverStoryPostSchema = yup.object({
   title: yup.string().required('Title is required'),
   content: yup.string().required('Content is required'),
-  date: yup.string().optional(),
+  date: yup.string().required("Date is required"),
   imageSource: yup
     .string()
     .oneOf(['URL', 'UPLOAD'], 'Invalid image source')
@@ -14,7 +14,7 @@ export const serverStorySchema = yup.object({
     .string()
     .url('Invalid image URL')
     .when('imageSource', (imageSource, schema) => {
-      if (imageSource.toString() === 'URL') {
+      if (imageSource[0] === 'URL') {
         return schema.required('Image URL is required when image source is URL');
       }
       return schema.notRequired();
@@ -23,7 +23,7 @@ export const serverStorySchema = yup.object({
     .mixed<Buffer>()
     .test('is-buffer', 'Invalid image data', (value) => value instanceof Buffer || value === undefined)
     .when('imageSource', (imageSource, schema) => {
-      if (imageSource.toString() === 'UPLOAD') {
+      if (imageSource[0] === 'UPLOAD') {
         return schema.required('Image data is required when image source is UPLOAD');
       }
       return schema.notRequired();

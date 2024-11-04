@@ -2,7 +2,7 @@
 import * as yup from 'yup';
 
 export const validationSchema = yup.object({
-    title: yup.string().required('Title is required').min(10, 'Title must be at least 10 characters long'),
+    title: yup.string().required('Title is required').min(6, 'Title must be at least 10 characters long'),
     date: yup.string().required('Date is required').test('is-valid-date', 'Invalid date format', (value) => !isNaN(Date.parse(value || ''))),
     content: yup.string().required('Content is required').min(8, 'Content must be at least 8 characters long'),
     image: yup.object({
