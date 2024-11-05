@@ -31,3 +31,6 @@ export async function GET(request: NextRequest, { params }: { params: { TeamId: 
     return new NextResponse('Failed to fetch image', { status: 500 });
   }
 }
+
+
+  // const EditEndpoint  = `/story/edit/PlayerStory/${team.id}`;

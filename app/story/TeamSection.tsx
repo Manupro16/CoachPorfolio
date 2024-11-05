@@ -20,9 +20,10 @@ interface Team {
 
 interface TeamSectionProps {
     team: Team;
+    editEndpoint: string; // Endpoint to edit the player's story'
 }
 
-const TeamSection: React.FC<TeamSectionProps> = ({team}) => {
+const TeamSection: React.FC<TeamSectionProps> = ({team, editEndpoint}) => {
 
     const textThreshold = 1900; // Adjust as needed
 
@@ -41,8 +42,8 @@ const TeamSection: React.FC<TeamSectionProps> = ({team}) => {
         textThreshold
     );
 
+    const endpoint = `${editEndpoint}/${team.id}`;
 
-    const EditEndpoint  = `/story/edit/PlayerStory/${team.id}`;
 
     return (
         <Grid
@@ -86,7 +87,7 @@ const TeamSection: React.FC<TeamSectionProps> = ({team}) => {
                             <Badge color="blue">{team.dates}</Badge>
                         </Flex>
 
-                        <Link href={EditEndpoint}>
+                        <Link href={endpoint}>
                             <Button variant="solid" size="1" >
                                 Edit Team
                             </Button>

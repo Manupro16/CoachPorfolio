@@ -76,6 +76,7 @@ async function StoryPage() {
                         headerImage="/pic/chuyVeraSeleccion_2.jpg"
                         ObjectPosition="top"
                         subtitle="Discover the journey of Coach Vera as a professional soccer player."
+                        editEndpoint="/story/edit/PlayerStory"
                         teams={playerCareers.map((career) => {
                             let image: string;
                             if (career.imageSource === 'URL' && career.imageUrl) {
@@ -108,12 +109,13 @@ async function StoryPage() {
                         subtitle="Explore the impactful coaching journey of Coach Vera."
                         headerImage="/pic/Chuy-Vera1.webp"
                         ObjectPosition="center"
+                        editEndpoint="/story/edit/CoachingStory"
                         teams={coachingCareers.map((career) => {
                             let image: string;
                             if (career.imageSource === 'URL' && career.imageUrl) {
                                 image = career.imageUrl;
                             } else if (career.imageSource === 'UPLOAD' && career.imageData) {
-                                image = `/api/story/coaching-career/image/${career.id}`;
+                                image = `/api/story/coaching-story/${career.id}/image`;
                             } else {
                                 image = '/default-placeholder-image.jpg'; // Fallback image
                             }

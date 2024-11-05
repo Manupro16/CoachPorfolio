@@ -22,6 +22,7 @@ interface CareerSectionProps {
     subtitle: string;
     headerImage: string;
     ObjectPosition: string;
+    editEndpoint: string;
     teams: Team[];
 }
 
@@ -31,6 +32,7 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                                                          headerImage,
                                                          ObjectPosition,
                                                          teams,
+                                                         editEndpoint
                                                      }) => {
 
 
@@ -76,7 +78,7 @@ const CareerSection: React.FC<CareerSectionProps> = ({
 
             {/* Teams */}
             {teams.map((team, index) => (
-                <TeamSection key={index} team={team}/>
+                <TeamSection key={index} team={team} editEndpoint={editEndpoint}/>
             ))}
         </Box>
     );
