@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 
-export const playerStoryPatchSchema = yup.object({
+export const StoryPatchSchema = yup.object({
   title: yup.string().trim().optional(),
   content: yup.string().trim().optional(),
   date: yup.string().trim().optional(),

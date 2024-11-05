@@ -2,7 +2,7 @@
 
 import {NextRequest, NextResponse} from 'next/server';
 import {prisma} from '@/lib/prisma';
-import {playerStoryPatchSchema} from '../../validation/serverStoryPatchSchema';
+import {StoryPatchSchema} from '../../validation/serverStoryPatchSchema';
 import * as yup from 'yup';
 import { Prisma } from '@prisma/client';
 
@@ -104,7 +104,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { TeamId
         }
 
         // Validate the fields using the update schema
-        const validatedData = await playerStoryPatchSchema.validate(fields, { abortEarly: false });
+        const validatedData = await StoryPatchSchema.validate(fields, { abortEarly: false });
 
         // Define the update data, retaining existing image data if not updating
         const updateData: Prisma.PlayerCareerUpdateInput = {
