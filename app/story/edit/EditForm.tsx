@@ -9,7 +9,7 @@ import {Controller, useForm} from "react-hook-form";
 import {useCallback, useEffect, useState} from "react";
 import axios from 'axios';
 import {yupResolver} from "@hookform/resolvers/yup";
-import {validationSchema} from "@/app/story/edit/validationSchemas/validationSchema";
+import createConditionalSchema from "@/app/story/edit/validationSchemas/validationSchema";
 import {CareerFields,} from "@/app/story/edit/types";
 import {useRouter} from 'next/navigation';
 
@@ -47,7 +47,7 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
         watch,
         reset,
     } = useForm<CareerFields>({
-        resolver: yupResolver(validationSchema),
+        resolver: yupResolver(createConditionalSchema(isEditMode)),
         defaultValues: {
             title: '',
             date: '',
@@ -95,7 +95,7 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
 
                     if (response.status === 200 && response.data) {
                         const data = response.data;
-                        console.log('Fetched data:', data);
+                        // console.log('Fetched data:', data);
                         // Populate the form with fetched data
                         setValue("title", data.title);
                         setValue("date", data.date || '');
@@ -189,66 +189,67 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
     }, [previewUrl]);
 
 
-    const onSubmit = useCallback(
-        async (data: CareerFields) => {
-            try {
-                const formData = new FormData();
-                const method = isEditMode ? 'patch' : 'post';
+  const onSubmit = useCallback(
+    async (data: CareerFields) => {
 
-                formData.append('title', data.title);
-                formData.append('date', data.date);
-                formData.append('content', data.content);
-                formData.append('imageSource', data.image.source);
+        try {
+            const formData = new FormData();
+            const method = isEditMode ? 'patch' : 'post';
 
+            formData.append('title', data.title);
+            formData.append('date', data.date);
+            formData.append('content', data.content);
+            formData.append('imageSource', data.image.source);
 
-                // Append image data
-                if (data.image.source === 'UPLOAD') {
-                    if (data.image.file && data.image.file.length > 0 && data.image.file[0]) {
-                        formData.append('imageFile', data.image.file[0]);
-                    } else {
-                        // Handle the case where no file is selected
-                        throw new Error('No image file selected.');
+            // Debug: Check the image file details before appending
+            if (data.image.source === 'UPLOAD') {
+                if (data.image.file && data.image.file.length > 0) {
+                    const file = data.image.file[0];
+
+                    if (file instanceof File) {
+                        formData.append('imageFile', file, file.name);
                     }
-                } else if (data.image.source === 'URL') {
-                    if (data.image.url) {
-                        formData.append('imageUrl', data.image.url);
-                    } else {
-                        // Handle the case where no URL is provided
-                        throw new Error('No image URL provided.');
-                    }
+                } else if (isEditMode) {
+                    // Handle the case where no file is selected
+                    formData.delete('imageSource');
                 }
-
-                // Proceed to send the formData to the backend
-                const response = await axios({
-                    method,
-                    url: APIEndpoint,
-                    data: formData,
-                });
-
-                // Handle the response
-                if (response.status === 200 || response.status === 201) {
-                    setFormSuccess('Form submitted successfully!');
-                    router.push('/story');
-                    // Optionally, reset the form or redirect the user
-                } else {
-                    setFormError('Failed to submit form. Please try again.');
+            } else if (data.image.source === 'URL') {
+                if (data.image.url) {
+                    formData.append('imageUrl', data.image.url);
+                } else if (isEditMode) {
+                    // Handle the case where no URL is provided
+                    formData.delete('imageSource');
                 }
-
-
-            } catch (error: unknown) {
-
-                if (axios.isAxiosError(error)) {
-                    setFormError(error.response?.data?.message || 'Failed to submit form.');
-                } else if (error instanceof Error) {
-                    setFormError(error.message || 'An unexpected error occurred.');
-                } else {
-                    setFormError('Something went wrong while submitting the form.');
-                }
-
             }
-        },
-        [APIEndpoint, isEditMode, router]
-    );
+
+            // Proceed to send the formData to the backend
+            const response = await axios({
+                method,
+                url: APIEndpoint,
+                data: formData,
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // Handle the response
+            if (response.status === 200 || response.status === 201) {
+                setFormSuccess('Form submitted successfully!');
+                router.push('/story');
+            } else {
+                setFormError('Failed to submit form. Please try again.');
+            }
+
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                setFormError(error.response?.data?.message || 'Failed to submit form.');
+            } else if (error instanceof Error) {
+                setFormError(error.message || 'An unexpected error occurred.');
+            } else {
+                setFormError('Something went wrong while submitting the form.');
+            }
+        }
+    },
+    [APIEndpoint, isEditMode, router]
+);
 
     const deleteData = useCallback(async () => {
         try {
@@ -272,7 +273,7 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
                 setFormError('Something went wrong while deleting the data.');
             }
         }
-    }, [APIEndpoint, TeamId, router]);
+    }, [APIEndpoint, router]);
 
 
     return (
