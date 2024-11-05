@@ -130,7 +130,7 @@ async function StoryPage() {
 
                     />
                 ) : (
-                    <NoDataWarning ChildrenComponentName="CoachingCareer" TeamId="create"/>
+                    <NoDataWarning ChildrenComponentName="CoachingStory" TeamId="create"/>
                 )}
 
                 {/* Closing Section */}
