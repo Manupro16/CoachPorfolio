@@ -66,7 +66,7 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                         <Text as="p" size="4" className="mt-2 max-w-md">
                             {subtitle}
                         </Text>
-                        <Link href="/story/edit/PlayerStory/create">
+                        <Link href={`${editEndpoint}/create`}>
                             <Button variant="solid" size="1">
                                 Add Team
                             </Button>
