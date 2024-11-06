@@ -16,7 +16,7 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                                                                title,
                                                                content,
                                                            }) => {
-    const textThreshold = 1650; // Number of characters before splitting
+    const textThreshold = 1750; // Number of characters before splitting
     const isTextLong = content.length > textThreshold;
     const firstPart = isTextLong ? content.substring(0, textThreshold) : content;
     const secondPart = isTextLong ? content.substring(textThreshold) : '';
@@ -78,7 +78,7 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                         <Text
                             as="p"
                             size="3"
-                            className="text-gray-300 leading-relaxed mt-4"
+                            className="text-gray-300 leading-relaxed "
                         >
                             {secondPart}
                         </Text>

@@ -107,6 +107,7 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
 
                         // Handle image preview based on source
                         if (data.imageSource === 'UPLOAD') {
+                            console.log('Fetching uploaded image');
                             // Fetch image blob from APIEndpointImage
                             const imageResponse = await axios.get(APIEndpointImage, {
                                 responseType: 'blob',
@@ -117,10 +118,12 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
                                 const previewUrl = URL.createObjectURL(blob);
                                 setValue('image.previewUrl', previewUrl);
                             } else {
+                                console.error('Failed to fetch uploaded image.');
                                 setFormError('Failed to fetch uploaded image.');
                             }
                         }
                     } else {
+                        console.error('Failed to fetch data 1');
                         // No data found; set to create mode
                         setIsEditMode(false);
                         setIsLoading(false);
@@ -128,6 +131,7 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
 
                 } else {
                     // No APIEndpoint provided; set to create mode
+                     console.error('no endpoint provided');
                     setIsEditMode(false);
                     setIsLoading(false);
                 }

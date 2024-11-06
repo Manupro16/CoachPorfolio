@@ -53,7 +53,7 @@ function EditEarlyLifePage() {
                     APIEndpoint={fetchUrl}
                     APIEndpointImage={imageEndpoint}
                     TeamId={undefined}  // Not needed since Early Life is a singleton entry
-                    AddNewData={true}  // Set AddNewData to false for editing an existing entry, not creating a new one.
+                    AddNewData={false}  // Set AddNewData to false for editing an existing entry, not creating a new one.
                 />
             </Flex>
         </section>
