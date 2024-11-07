@@ -1,13 +1,14 @@
 // story/StoryPage.tsx
 
 import React from 'react';
-import {Box, Grid,} from '@radix-ui/themes';
+import {Box, Grid, Container} from '@radix-ui/themes';
 import IntroductionSection from "@/app/story/IntroductionSection";
 import ClosingSection from "@/app/story/ClosingSection";
 import NoDataWarning from "@/app/story/NoDataWarning";
 import {prisma} from "@/lib/prisma";
 import EarlyLifeSection from "@/app/story/EarlyLifeSection";
 import CareerSection from './CareerSection';
+import '@/app/styles.css'
 
 async function StoryPage() {
 
@@ -30,11 +31,11 @@ async function StoryPage() {
 
 
     return (
-        <section title="story" className="w-screen h-auto relative">
+        <section title="story" className="w-full h-auto relative bg-gray-900">
             {/* Background Gradient */}
             <Box
                 as="div"
-                className="absolute inset-0 bg-gradient-to-r from-black via-primaryDark to-black opacity-30 pointer-events-none z-0"
+                className="absolute inset-0 bg-gradient-to-b from-black via-primaryDark to-black opacity-30 pointer-events-none z-0"
             />
             {/* Top SVG Wave */}
             <Box
@@ -42,8 +43,8 @@ async function StoryPage() {
                 className="absolute inset-x-0 top-0 w-full h-[15%] pointer-events-none z-0 overflow-hidden"
             >
                 <svg
-                    viewBox="0 0 1728 320"
-                    className="w-full h-[80%] fill-current text-primaryDark opacity-30"
+                    viewBox="0 0 1440 320"
+                    className="w-full h-full fill-current text-primaryDark opacity-30"
                     preserveAspectRatio="none"
                 >
                     <path
@@ -53,97 +54,99 @@ async function StoryPage() {
                 </svg>
             </Box>
             {/* Main Content */}
-            <Grid as="div" columns="1fr" rows="auto">
-                <IntroductionSection playerStatus="Retired" coachStatus="Active"/>
+            <Container px={{ initial: '4', sm: '6', md: '8' }} py="8" className="custom-container" >
+                <Grid as="div" columns="1fr" rows="auto">
+                    <IntroductionSection playerStatus="Retired" coachStatus="Active"/>
 
-                 {/*EarlyLife Section*/}
-                {earlyLife ? (
-                    <EarlyLifeSection
-                        imageSrc={imageSrc}
-                        imageAlt="Early Life"
-                        title={earlyLife.title}
-                        content={earlyLife.content}
+                    {/*EarlyLife Section*/}
+                    {earlyLife ? (
+                        <EarlyLifeSection
+                            imageSrc={imageSrc}
+                            imageAlt="Early Life"
+                            title={earlyLife.title}
+                            content={earlyLife.content}
+                        />
+                    ) : (
+                        <NoDataWarning ChildrenComponentName="earlyLife"/>
+                    )}
+
+
+                    {/* Player Career Section */}
+                    {playerCareers.length > 0 ? (
+                        <CareerSection
+                            title="Playing Career"
+                            headerImage="/pic/chuyVeraSeleccion_2.jpg"
+                            ObjectPosition="top"
+                            subtitle="Discover the journey of Coach Vera as a professional soccer player."
+                            editEndpoint="/story/edit/PlayerStory"
+                            teams={playerCareers.map((career) => {
+                                let image: string;
+                                if (career.imageSource === 'URL' && career.imageUrl) {
+                                    image = career.imageUrl;
+                                } else if (career.imageSource === 'UPLOAD' && career.imageData) {
+                                    image = `/api/story/player-story/${career.id}/image`;
+                                } else {
+                                    image = '/default-placeholder-image.jpg'; // Fallback image
+                                }
+
+                                return {
+                                    id: career.id,
+                                    name: career.title,
+                                    image: image,
+                                    dates: career.date,
+                                    description: career.content,
+                                };
+                            })}
+
+                        />
+                    ) : (
+                        <NoDataWarning ChildrenComponentName="PlayerStory" TeamId="create"/>
+                    )}
+
+
+                    {/* Coaching Career Section */}
+                    {coachingCareers.length > 0 ? (
+                        <CareerSection
+                            title="Coaching Career"
+                            subtitle="Explore the impactful coaching journey of Coach Vera."
+                            headerImage="/pic/Chuy-Vera1.webp"
+                            ObjectPosition="center"
+                            editEndpoint="/story/edit/CoachingStory"
+                            teams={coachingCareers.map((career) => {
+                                let image: string;
+                                if (career.imageSource === 'URL' && career.imageUrl) {
+                                    image = career.imageUrl;
+                                } else if (career.imageSource === 'UPLOAD' && career.imageData) {
+                                    image = `/api/story/coaching-story/${career.id}/image`;
+                                } else {
+                                    image = '/default-placeholder-image.jpg'; // Fallback image
+                                }
+
+                                return {
+                                    id: career.id,
+                                    name: career.title,
+                                    image: image,
+                                    dates: career.date,
+                                    description: career.content,
+                                };
+                            })}
+
+
+                        />
+                    ) : (
+                        <NoDataWarning ChildrenComponentName="CoachingStory" TeamId="create"/>
+                    )}
+
+                    {/* Closing Section */}
+                    <ClosingSection
+                        text="Coach Chuy Vera's dedication to soccer has left an indelible mark on the sport. His journey continues to inspire players and coaches around the world."
                     />
-                ) : (
-                    <NoDataWarning ChildrenComponentName="earlyLife"/>
-                )}
-
-
-                {/* Player Career Section */}
-                {playerCareers.length > 0 ? (
-                    <CareerSection
-                        title="Playing Career"
-                        headerImage="/pic/chuyVeraSeleccion_2.jpg"
-                        ObjectPosition="top"
-                        subtitle="Discover the journey of Coach Vera as a professional soccer player."
-                        editEndpoint="/story/edit/PlayerStory"
-                        teams={playerCareers.map((career) => {
-                            let image: string;
-                            if (career.imageSource === 'URL' && career.imageUrl) {
-                                image = career.imageUrl;
-                            } else if (career.imageSource === 'UPLOAD' && career.imageData) {
-                                image = `/api/story/player-story/${career.id}/image`;
-                            } else {
-                                image = '/default-placeholder-image.jpg'; // Fallback image
-                            }
-
-                            return {
-                                id: career.id,
-                                name: career.title,
-                                image: image,
-                                dates: career.date,
-                                description: career.content,
-                            };
-                        })}
-
-                    />
-                ) : (
-                    <NoDataWarning ChildrenComponentName="PlayerStory" TeamId="create"/>
-                )}
-
-
-                {/* Coaching Career Section */}
-                {coachingCareers.length > 0 ? (
-                    <CareerSection
-                        title="Coaching Career"
-                        subtitle="Explore the impactful coaching journey of Coach Vera."
-                        headerImage="/pic/Chuy-Vera1.webp"
-                        ObjectPosition="center"
-                        editEndpoint="/story/edit/CoachingStory"
-                        teams={coachingCareers.map((career) => {
-                            let image: string;
-                            if (career.imageSource === 'URL' && career.imageUrl) {
-                                image = career.imageUrl;
-                            } else if (career.imageSource === 'UPLOAD' && career.imageData) {
-                                image = `/api/story/coaching-story/${career.id}/image`;
-                            } else {
-                                image = '/default-placeholder-image.jpg'; // Fallback image
-                            }
-
-                            return {
-                                id: career.id,
-                                name: career.title,
-                                image: image,
-                                dates: career.date,
-                                description: career.content,
-                            };
-                        })}
-
-
-                    />
-                ) : (
-                    <NoDataWarning ChildrenComponentName="CoachingStory" TeamId="create"/>
-                )}
-
-                {/* Closing Section */}
-                <ClosingSection
-                    text="Coach Chuy Vera's dedication to soccer has left an indelible mark on the sport. His journey continues to inspire players and coaches around the world."
-                />
-            </Grid>
+                </Grid>
+            </Container>
             {/* Bottom SVG Wave */}
             <Box
                 as="div"
-                className="absolute inset-x-0 bottom-0 w-full h-[5%]"
+                className="absolute inset-x-0 bottom-0 w-full h-48 pointer-events-none z-0 overflow-hidden"
             >
                 <svg
                     viewBox="0 0 1440 320"
@@ -162,4 +165,5 @@ async function StoryPage() {
 
 export default StoryPage;
 
+// absolute inset-x-0 bottom-0 w-full h-[5%]
 
