@@ -45,14 +45,14 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                         src={headerImage}
                         alt={title}
                         fill
-                        className="rounded-lg"
+                        className="rounded-lg object-cover"
                         style={{
                             filter: 'brightness(0.75) opacity(0.9)',
-                            objectFit: 'cover',
                             objectPosition: ObjectPosition,
                         }}
+                        priority
                     />
-                    <Box className="absolute inset-0 bg-black bg-opacity-50 rounded-lg"/>
+                    <Box className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-80 rounded-lg"/>
                     <Flex
                         direction="column"
                         align="center"
@@ -60,10 +60,10 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                         className="absolute inset-0 text-center text-white px-4"
                         gapY="2"
                     >
-                        <Heading as="h2" size="7" className="font-bold text-primary">
+                        <Heading as="h2" size="7" className="font-bold text-primary"   style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.7)' }}>
                             {title}
                         </Heading>
-                        <Text as="p" size="4" className="mt-2 max-w-md">
+                        <Text as="p" size="4" className="mt-2 max-w-md" style={{ textShadow: '1px 1px 3px rgba(0, 0, 0, 0.7)' }}>
                             {subtitle}
                         </Text>
                         <Link href={`${editEndpoint}/create`}>
@@ -85,3 +85,5 @@ const CareerSection: React.FC<CareerSectionProps> = ({
 };
 
 export default CareerSection;
+
+// absolute inset-0 bg-black bg-opacity-50 rounded-lg

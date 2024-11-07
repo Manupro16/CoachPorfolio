@@ -25,7 +25,7 @@ interface TeamSectionProps {
 
 const TeamSection: React.FC<TeamSectionProps> = ({team, editEndpoint}) => {
 
-    const textThreshold = 1900; // Adjust as needed
+    const textThreshold = 1450; // Adjust as needed
 
     const isTextLong = team.description.length > textThreshold;
 
