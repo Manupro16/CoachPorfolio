@@ -1,7 +1,8 @@
 //story/EarlyLifeSection.tsx
 
 import React from 'react';
-import { AspectRatio, Box, Button, Flex, Grid, Heading, Link, Text } from '@radix-ui/themes';
+import { Section, AspectRatio, Box, Button, Flex, Grid, Heading, Link, Text } from '@radix-ui/themes';
+import ReactMarkdown from 'react-markdown';
 
 interface EarlyLifeSectionProps {
     imageSrc: string;
@@ -16,7 +17,7 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                                                                title,
                                                                content,
                                                            }) => {
-    const textThreshold = 1750; // Number of characters before splitting
+    const textThreshold = 1020; // Number of characters before splitting
     const isTextLong = content.length > textThreshold;
     const firstPart = isTextLong ? content.substring(0, textThreshold) : content;
     const secondPart = isTextLong ? content.substring(textThreshold) : '';
@@ -24,10 +25,10 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
 
 
     return (
-        <Box className="relative w-full mb-16 pt-10 px-4 sm:px-6 lg:px-8">
+        <Section pt="9" px={{ initial: '4', sm: '6', lg: '8' }} aria-labelledby="early-life-title" className="relative w-full mb-16">
             <Grid
                 columns={{ initial: '1fr', md: '1fr 1fr' }}
-                gapX="5"
+                gapX={{ initial: '4', md: '6' }}
                 gapY="3"
                 align="start"
             >
@@ -69,7 +70,7 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                         size="3"
                         className="text-gray-300 leading-relaxed max-w-prose"
                     >
-                        {firstPart}
+                        <ReactMarkdown>{firstPart}</ReactMarkdown>
                     </Text>
                 </Flex>
                 {/* Overflow Text Section */}
@@ -80,12 +81,12 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                             size="3"
                             className="text-gray-300 leading-relaxed "
                         >
-                            {secondPart}
+                            <ReactMarkdown>{secondPart}</ReactMarkdown>
                         </Text>
                     </Box>
                 )}
             </Grid>
-        </Box>
+        </Section>
     );
 };
 
