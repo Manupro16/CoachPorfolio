@@ -1,14 +1,20 @@
-import React from 'react';
+'use client'
+
+import React, {useState} from 'react';
 import {
     AspectRatio,
     Badge,
-    Box, Button,
+    Box,
+    Button,
+    Card,
     Flex,
     Grid,
-    Heading, Link,
+    Heading,
+    Link,
     Text,
 } from '@radix-ui/themes';
 import Image from 'next/image';
+import { ArrowDownIcon, ArrowUpIcon} from '@radix-ui/react-icons'
 
 interface Team {
     id: number;
@@ -20,12 +26,13 @@ interface Team {
 
 interface TeamSectionProps {
     team: Team;
-    editEndpoint: string; // Endpoint to edit the player's story'
+    editEndpoint: string; // Endpoint to edit the player's story
 }
 
 const TeamSection: React.FC<TeamSectionProps> = ({team, editEndpoint}) => {
+    const [isExpanded, setIsExpanded] = useState(false);
 
-    const textThreshold = 1450; // Adjust as needed
+    const textThreshold = 1490; // Adjust as needed
 
     const isTextLong = team.description.length > textThreshold;
 
@@ -44,85 +51,114 @@ const TeamSection: React.FC<TeamSectionProps> = ({team, editEndpoint}) => {
 
     const endpoint = `${editEndpoint}/${team.id}`;
 
-
     return (
-        <Grid
-            columns={{initial: '1fr', md: '1fr 1fr'}}
-            gapX="5"
-            gapY="1"
-            align="start"
-            className="mb-12"
-        >
-            <Box
-                as="span"
-                className="block h-[3px] w-full bg-primary mt-2 mb-4 col-span-2"
-            />
-            {/* Image Section */}
-            <Box>
-                <AspectRatio
-                    ratio={13 / 9}
-                    className="transform transition-transform duration-200 hover:scale-105"
+        <Grid columns="1fr" gapX="5" gapY="1" align="start" className="mb-12">
+            <Card
+                size="2"
+                className="inset-0 bg-gradient-to-r from-black via-blue-950  to-black opacity-90"
+            >
+                <Grid
+                    columns={{initial: '1fr', md: '1fr 1fr'}}
+                    gapX="5"
+                    gapY="1"
+                    align="start"
                 >
-                    <Box className="relative w-full h-full">
-                        <Image
-                            src={team.image}
-                            alt={team.name}
-                            fill
-                            style={{objectFit: 'cover'}}
-                            className="rounded-lg"
-                            priority
-                        />
+                    {/* Image Section */}
+                    <Box>
+                        <AspectRatio
+                            ratio={4 / 3}
+                            className="transform transition-transform duration-200 hover:scale-105"
+                        >
+                            <Box className="relative w-full h-full">
+                                <Image
+                                    src={team.image}
+                                    alt={team.name}
+                                    fill
+                                    style={{objectFit: 'cover'}}
+                                    className="rounded-lg"
+                                    priority
+                                />
+                            </Box>
+                        </AspectRatio>
                     </Box>
-                </AspectRatio>
-            </Box>
 
-            {/* Text Section */}
-            <Box>
-                <Flex direction="column" gap="2">
-                    <Flex justify="between" align="center" gap="4" direction="row" className="pr-6">
-                        <Flex as="div" align="center" gap="2">
-                            <Heading as="h3" size="5" className="text-primary">
-                                {team.name}
-                            </Heading>
-                            <Badge color="blue">{team.dates}</Badge>
+                    {/* Text Section */}
+                    <Box>
+                        <Flex direction="column" gap="2">
+                            <Flex
+                                justify="between"
+                                align="center"
+                                gap="4"
+                                direction="row"
+                                className="pr-6"
+                            >
+                                <Flex as="div" align="center" gap="2">
+                                    <Heading as="h3" size="5" className="text-white">
+                                        {team.name}
+                                    </Heading>
+                                    <Badge color="blue">{team.dates}</Badge>
+                                </Flex>
+
+                                <Link href={endpoint}>
+                                    <Button variant="solid" size="1" className="flex items-center">
+                                        Edit Team
+                                    </Button>
+                                </Link>
+                            </Flex>
+
+                            <Text
+                                as="p"
+                                size="3"
+                                className="text-gray-300 leading-relaxed"
+                            >
+                                {firstPartAdjusted}
+                            </Text>
                         </Flex>
 
-                        <Link href={endpoint}>
-                            <Button variant="solid" size="1" >
-                                Edit Team
+                    </Box>
+                    {/* Read More Button */}
+                    {isTextLong && !isExpanded && (
+                        <Flex justify="center" align="center" gap="2" className="col-span-2 mt-5 ">
+
+                            <Button
+                                variant="ghost"
+                                size="2"
+                                onClick={() => setIsExpanded(true)}
+                                className="self-start  "
+                                aria-expanded={isExpanded}
+                            >
+                                <ArrowDownIcon className="w-4 h-4" /> Read More
                             </Button>
-                        </Link>
-                    </Flex>
-
-                    <Text
-                        as="p"
-                        size="3"
-                        className="text-gray-300 leading-relaxed"
-                    >
-                        {firstPartAdjusted}
-                    </Text>
-                </Flex>
-            </Box>
-
-            {/* Overflow Text Section */}
-            {isTextLong && secondPartAdjusted && (
-                <Box className="md:col-span-2">
-                    <Text
-                        as="p"
-                        size="3"
-                        className="text-gray-300 leading-relaxed mt-4"
-                    >
-                        {secondPartAdjusted}
-                    </Text>
-                </Box>
-            )}
-            <Box
-                as="span"
-                className="block h-[3px] w-full bg-primary mt-2 mb-4 col-span-2"
-            />
+                        </Flex>
+                    )}
+                </Grid>
+                {/* Overflow Text Section */}
+                {isExpanded && secondPartAdjusted && (
+                    <Box className="mt-4">
+                        <Text
+                            as="p"
+                            size="3"
+                            className="text-gray-300 leading-relaxed"
+                        >
+                            {secondPartAdjusted}
+                        </Text>
+                        <Flex justify="center" align="center" gap="2" className="mt-8">
+                            {/* Read Less Button */}
+                            <Button
+                                variant="ghost"
+                                size="2"
+                                onClick={() => setIsExpanded(false)}
+                                className="mt-2 self-start"
+                                aria-expanded={isExpanded}
+                            >
+                                <ArrowUpIcon className="w-4 h-4" /> Read Less
+                            </Button>
+                        </Flex>
+                    </Box>
+                )}
+            </Card>
         </Grid>
     );
 };
 
 export default TeamSection;
-
