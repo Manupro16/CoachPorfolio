@@ -1,7 +1,7 @@
 //story/EarlyLifeSection.tsx
 
 import React from 'react';
-import { Section, AspectRatio, Box, Button, Flex, Grid, Heading, Link, Text } from '@radix-ui/themes';
+import { Section, AspectRatio, Box, Button, Flex, Grid, Heading, Link } from '@radix-ui/themes';
 import ReactMarkdown from 'react-markdown';
 
 interface EarlyLifeSectionProps {
@@ -65,24 +65,20 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                         as="span"
                         className="block h-[3px] w-1/2 bg-primary mt-2 mb-4"
                     />
-                    <Text
-                        as="p"
-                        size="3"
+                    <Box
                         className="text-gray-300 leading-relaxed max-w-prose"
                     >
                         <ReactMarkdown>{firstPart}</ReactMarkdown>
-                    </Text>
+                    </Box>
                 </Flex>
                 {/* Overflow Text Section */}
                 {isTextLong && secondPart && (
                     <Box className="col-span-2">
-                        <Text
-                            as="p"
-                            size="3"
+                        <Box
                             className="text-gray-300 leading-relaxed "
                         >
                             <ReactMarkdown>{secondPart}</ReactMarkdown>
-                        </Text>
+                        </Box>
                     </Box>
                 )}
             </Grid>
