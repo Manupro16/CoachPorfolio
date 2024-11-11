@@ -7,12 +7,7 @@ import {StoryPatchSchema} from '@/app/api/story/validation/serverStoryPatchSchem
 import {Prisma} from "@prisma/client";
 import * as yup from 'yup';
 
-// Disable Next.js default body parsing
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
+
 
 type Fields = {
   title: string;
@@ -32,7 +27,7 @@ export async function GET() {
         });
 
         if (!earlyLife) {
-            return new NextResponse(null, {status: 204});
+            return new NextResponse(null, {status: 404});
         }
 
         return NextResponse.json(earlyLife, {status: 200});

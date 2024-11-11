@@ -1,7 +1,6 @@
 import React from "react";
 import {usePathname} from "next/navigation";
 import Link from "next/link";
-import {Flex} from "@radix-ui/themes";
 
 export interface NavLink {
     href: string;

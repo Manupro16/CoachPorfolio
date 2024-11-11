@@ -13,7 +13,7 @@ import createConditionalSchema from "@/app/story/edit/validationSchemas/validati
 import {CareerFields,} from "@/app/story/edit/types";
 import {useRouter} from 'next/navigation';
 
-import {EarlyLife} from '@prisma/client'
+import {ApiTypesCalls} from "@/app/story/edit/types";
 
 
 const DynamicReactMDEditor = dynamic(() => import('@/components/DynamicReactMDEditor'), {
@@ -90,7 +90,7 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
                 if (!AddNewData) {
                     console.log(APIEndpoint);
 
-                    const response = await axios.get<EarlyLife>(APIEndpoint);
+                    const response = await axios.get<ApiTypesCalls>(APIEndpoint);
 
 
                     if (response.status === 200 && response.data) {
@@ -131,7 +131,7 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
 
                 } else {
                     // No APIEndpoint provided; set to create mode
-                     console.error('no endpoint provided');
+                    console.error('no endpoint provided');
                     setIsEditMode(false);
                     setIsLoading(false);
                 }
@@ -193,17 +193,17 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
     }, [previewUrl]);
 
 
-  const onSubmit = useCallback(
-    async (data: CareerFields) => {
+    const onSubmit = useCallback(
+        async (data: CareerFields) => {
 
-        try {
-            const formData = new FormData();
-            const method = isEditMode ? 'patch' : 'post';
+            try {
+                const formData = new FormData();
+                const method = isEditMode ? 'patch' : 'post';
 
-            formData.append('title', data.title);
-            formData.append('date', data.date);
-            formData.append('content', data.content);
-            formData.append('imageSource', data.image.source);
+                formData.append('title', data.title);
+                formData.append('date', data.date);
+                formData.append('content', data.content);
+                formData.append('imageSource', data.image.source);
 
             // Debug: Check the image file details before appending
             if (data.image.source === 'UPLOAD') {
@@ -226,34 +226,34 @@ function EditFormPage({APIEndpoint, APIEndpointImage, TeamId, AddNewData}: EditF
                 }
             }
 
-            // Proceed to send the formData to the backend
-            const response = await axios({
-                method,
-                url: APIEndpoint,
-                data: formData,
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+                // Proceed to send the formData to the backend
+                const response = await axios({
+                    method,
+                    url: APIEndpoint,
+                    data: formData,
+                    headers: {'Content-Type': 'multipart/form-data'}
+                });
 
-            // Handle the response
-            if (response.status === 200 || response.status === 201) {
-                setFormSuccess('Form submitted successfully!');
-                router.push('/story');
-            } else {
-                setFormError('Failed to submit form. Please try again.');
-            }
+                // Handle the response
+                if (response.status === 200 || response.status === 201) {
+                    setFormSuccess('Form submitted successfully!');
+                    router.push('/story');
+                } else {
+                    setFormError('Failed to submit form. Please try again.');
+                }
 
-        } catch (error: unknown) {
-            if (axios.isAxiosError(error)) {
-                setFormError(error.response?.data?.message || 'Failed to submit form.');
-            } else if (error instanceof Error) {
-                setFormError(error.message || 'An unexpected error occurred.');
-            } else {
-                setFormError('Something went wrong while submitting the form.');
+            } catch (error: unknown) {
+                if (axios.isAxiosError(error)) {
+                    setFormError(error.response?.data?.message || 'Failed to submit form.');
+                } else if (error instanceof Error) {
+                    setFormError(error.message || 'An unexpected error occurred.');
+                } else {
+                    setFormError('Something went wrong while submitting the form.');
+                }
             }
-        }
-    },
-    [APIEndpoint, isEditMode, router]
-);
+        },
+        [APIEndpoint, isEditMode, router]
+    );
 
     const deleteData = useCallback(async () => {
         try {
