@@ -9,8 +9,13 @@ import {prisma} from "@/lib/prisma";
 import EarlyLifeSection from "@/app/story/EarlyLifeSection";
 import CareerSection from './CareerSection';
 import '@/app/styles.css'
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 async function StoryPage() {
+
+    const session = await getServerSession(authOptions);
+    const isAdmin = session?.user?.role === 'admin';
 
     // Fetch data in parallel
     const [earlyLife, playerCareers, coachingCareers] = await Promise.all([
@@ -65,6 +70,7 @@ async function StoryPage() {
                             imageAlt="Early Life"
                             title={earlyLife.title}
                             content={earlyLife.content}
+                            isAdmin={isAdmin}
                         />
                     ) : (
                         <NoDataWarning ChildrenComponentName="earlyLife"/>
@@ -97,6 +103,7 @@ async function StoryPage() {
                                     description: career.content,
                                 };
                             })}
+                            isAdmin={isAdmin}
 
                         />
                     ) : (
@@ -130,6 +137,7 @@ async function StoryPage() {
                                     description: career.content,
                                 };
                             })}
+                            isAdmin={isAdmin}
 
 
                         />
@@ -164,6 +172,4 @@ async function StoryPage() {
 }
 
 export default StoryPage;
-
-// absolute inset-x-0 bottom-0 w-full h-[5%]
 

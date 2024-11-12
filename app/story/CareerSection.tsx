@@ -24,6 +24,7 @@ interface CareerSectionProps {
     ObjectPosition: string;
     editEndpoint: string;
     teams: Team[];
+    isAdmin: boolean;
 }
 
 const CareerSection: React.FC<CareerSectionProps> = ({
@@ -32,7 +33,8 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                                                          headerImage,
                                                          ObjectPosition,
                                                          teams,
-                                                         editEndpoint
+                                                         editEndpoint,
+                                                         isAdmin,
                                                      }) => {
 
 
@@ -52,7 +54,8 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                         }}
                         priority
                     />
-                    <Box className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-80 rounded-lg"/>
+                    <Box
+                        className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-80 rounded-lg"/>
                     <Flex
                         direction="column"
                         align="center"
@@ -60,17 +63,21 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                         className="absolute inset-0 text-center text-white px-4"
                         gapY="2"
                     >
-                        <Heading as="h2" size="7" className="font-bold text-primary"   style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.7)' }}>
+                        <Heading as="h2" size="7" className="font-bold text-primary"
+                                 style={{textShadow: '2px 2px 4px rgba(0, 0, 0, 0.7)'}}>
                             {title}
                         </Heading>
-                        <Text as="p" size="4" className="mt-2 max-w-md" style={{ textShadow: '1px 1px 3px rgba(0, 0, 0, 0.7)' }}>
+                        <Text as="p" size="4" className="mt-2 max-w-md"
+                              style={{textShadow: '1px 1px 3px rgba(0, 0, 0, 0.7)'}}>
                             {subtitle}
                         </Text>
-                        <Link href={`${editEndpoint}/create`}>
-                            <Button variant="solid" size="1">
-                                Add Team
-                            </Button>
-                        </Link>
+                        {isAdmin && (
+                            <Link href={`${editEndpoint}/create`}>
+                                <Button variant="solid" size="1">
+                                    Add Team
+                                </Button>
+                            </Link>
+                        )}
                     </Flex>
                 </AspectRatio>
 

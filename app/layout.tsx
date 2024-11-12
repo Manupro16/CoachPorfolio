@@ -6,6 +6,8 @@ import NavBar from "@/app/NavBar";
 import FooterSection from "@/app/FooterSection";
 import React from "react";
 import Providers from '@/components/Providers';
+import {getServerSession} from "next-auth";
+import {authOptions} from "@/lib/auth";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -23,12 +25,14 @@ export const metadata: Metadata = {
     description: "Official portfolio and showcase of Chuy Vera's career and achievements.",
 };
 
-export default function RootLayout({children,}: Readonly<{ children: React.ReactNode; }>) {
+export default async function RootLayout({children,}: Readonly<{ children: React.ReactNode; }>) {
+
+    const session = await getServerSession(authOptions);
 
     return (
         <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
+        <Providers session={session}>
             <NavBar/>
             <main>{children}</main>
             <FooterSection/>

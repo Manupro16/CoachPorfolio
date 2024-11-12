@@ -1,7 +1,7 @@
 //story/EarlyLifeSection.tsx
 
 import React from 'react';
-import { Section, AspectRatio, Box, Button, Flex, Grid, Heading, Link } from '@radix-ui/themes';
+import {Section, AspectRatio, Box, Button, Flex, Grid, Heading, Link} from '@radix-ui/themes';
 import ReactMarkdown from 'react-markdown';
 
 interface EarlyLifeSectionProps {
@@ -9,6 +9,7 @@ interface EarlyLifeSectionProps {
     imageAlt: string;
     title: string;
     content: string;
+    isAdmin: boolean;
 }
 
 const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
@@ -16,6 +17,7 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                                                                imageAlt,
                                                                title,
                                                                content,
+                                                               isAdmin,
                                                            }) => {
     const textThreshold = 1020; // Number of characters before splitting
     const isTextLong = content.length > textThreshold;
@@ -23,12 +25,12 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
     const secondPart = isTextLong ? content.substring(textThreshold) : '';
 
 
-
     return (
-        <Section pt="9" px={{ initial: '4', sm: '6', lg: '8' }} aria-labelledby="early-life-title" className="relative w-full mb-16">
+        <Section pt="9" px={{initial: '4', sm: '6', lg: '8'}} aria-labelledby="early-life-title"
+                 className="relative w-full mb-16">
             <Grid
-                columns={{ initial: '1fr', md: '1fr 1fr' }}
-                gapX={{ initial: '4', md: '6' }}
+                columns={{initial: '1fr', md: '1fr 1fr'}}
+                gapX={{initial: '4', md: '6'}}
                 gapY="3"
                 align="start"
             >
@@ -48,18 +50,20 @@ const EarlyLifeSection: React.FC<EarlyLifeSectionProps> = ({
                 {/* Text Section */}
                 <Flex
                     direction="column"
-                    align={{ initial: 'center', md: 'start' }}
+                    align={{initial: 'center', md: 'start'}}
                     className="text-center md:text-left"
                 >
                     <Flex gap="4" align="center">
                         <Heading as="h2" size="7" className="font-bold text-primary">
                             {title}
                         </Heading>
-                        <Link href="/story/edit/earlyLife" >
-                            <Button variant="solid" size="1">
-                                Edit Early Life
-                            </Button>
-                        </Link>
+                        {isAdmin && (
+                            <Link href="/story/edit/earlyLife">
+                                <Button variant="solid" size="1">
+                                    Edit Early Life
+                                </Button>
+                            </Link>
+                        )}
                     </Flex>
                     <Box
                         as="span"

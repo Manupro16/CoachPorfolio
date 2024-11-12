@@ -1,8 +1,10 @@
+// components/NavBar.tsx
+
 'use client';
 
 import React from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { Box, Flex, Button } from '@radix-ui/themes';
+import { Box, Flex, Button, Avatar, DropdownMenu } from '@radix-ui/themes';
 import Link from 'next/link';
 import NavLinks, { NavLink } from '@/components/NavLink';
 
@@ -33,15 +35,25 @@ function NavBar(): JSX.Element {
             <NavLinks links={rightLinks} />
           </Box>
           {session ? (
-            <Button
-              variant="solid"
-              color="red"
-              onClick={() => signOut()}
-              className="text-white"
-              size="1"
-            >
-              Sign Out
-            </Button>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger >
+                <Avatar
+                  src={session.user?.image || undefined}
+                  fallback={session.user?.name ? session.user.name.charAt(0) : 'U'}
+                  size="2"
+                  className="cursor-pointer"
+                />
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content sideOffset={5}>
+                <DropdownMenu.Item disabled>
+                  Signed in as {session.user?.email}
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator />
+                <DropdownMenu.Item onSelect={() => signOut()} color="red">
+                  Sign Out
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
           ) : (
             <Link href="/auth/signin">
               <Button variant="solid" className="text-white" size="1">

@@ -14,7 +14,7 @@ import {
     Text,
 } from '@radix-ui/themes';
 import Image from 'next/image';
-import { ArrowDownIcon, ArrowUpIcon} from '@radix-ui/react-icons'
+import {ArrowDownIcon, ArrowUpIcon} from '@radix-ui/react-icons'
 
 interface Team {
     id: number;
@@ -27,9 +27,10 @@ interface Team {
 interface TeamSectionProps {
     team: Team;
     editEndpoint: string; // Endpoint to edit the player's story
+    isAdmin: boolean; // Whether the user is an admin or not
 }
 
-const TeamSection: React.FC<TeamSectionProps> = ({team, editEndpoint}) => {
+const TeamSection: React.FC<TeamSectionProps> = ({team, editEndpoint, isAdmin}) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const textThreshold = 1490; // Adjust as needed
@@ -99,11 +100,13 @@ const TeamSection: React.FC<TeamSectionProps> = ({team, editEndpoint}) => {
                                     <Badge color="blue">{team.dates}</Badge>
                                 </Flex>
 
-                                <Link href={endpoint}>
-                                    <Button variant="solid" size="1" className="flex items-center">
-                                        Edit Team
-                                    </Button>
-                                </Link>
+                                {isAdmin && (
+                                    <Link href={endpoint}>
+                                        <Button variant="solid" size="1" className="flex items-center">
+                                            Edit Team
+                                        </Button>
+                                    </Link>
+                                )}
                             </Flex>
 
                             <Text
@@ -127,7 +130,7 @@ const TeamSection: React.FC<TeamSectionProps> = ({team, editEndpoint}) => {
                                 className="self-start  "
                                 aria-expanded={isExpanded}
                             >
-                                <ArrowDownIcon className="w-4 h-4" /> Read More
+                                <ArrowDownIcon className="w-4 h-4"/> Read More
                             </Button>
                         </Flex>
                     )}
@@ -151,7 +154,7 @@ const TeamSection: React.FC<TeamSectionProps> = ({team, editEndpoint}) => {
                                 className="mt-2 self-start"
                                 aria-expanded={isExpanded}
                             >
-                                <ArrowUpIcon className="w-4 h-4" /> Read Less
+                                <ArrowUpIcon className="w-4 h-4"/> Read Less
                             </Button>
                         </Flex>
                     </Box>

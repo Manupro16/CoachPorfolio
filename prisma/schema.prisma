@@ -14,7 +14,8 @@ model User {
   email         String?   @unique
   password      String?
   emailVerified DateTime?
-  image         String?
+  imageData     Bytes? // Binary data of the image
+  imageType     String? // MIME type of the image (e.g., 'image/jpeg')
   role          Role      @default(USER)
   accounts      Account[]
   sessions      Session[]
