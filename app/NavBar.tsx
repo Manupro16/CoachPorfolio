@@ -36,15 +36,18 @@ function NavBar(): JSX.Element {
           </Box>
           {session ? (
             <DropdownMenu.Root>
-              <DropdownMenu.Trigger >
-                <Avatar
-                  src={session.user?.image || undefined}
-                  fallback={session.user?.name ? session.user.name.charAt(0) : 'U'}
-                  size="2"
-                  className="cursor-pointer"
-                />
+              <DropdownMenu.Trigger>
+                <Button variant="ghost" size="1" className="p-0 ">
+                  <Avatar
+                    src={session.user?.image || undefined}
+                    fallback={
+                      session.user?.name ? session.user.name.charAt(0) : 'U'
+                    }
+                    size="2"
+                  />
+                </Button>
               </DropdownMenu.Trigger>
-              <DropdownMenu.Content sideOffset={5}>
+              <DropdownMenu.Content sideOffset={5} className="bg-gray-800 text-white">
                 <DropdownMenu.Item disabled>
                   Signed in as {session.user?.email}
                 </DropdownMenu.Item>
