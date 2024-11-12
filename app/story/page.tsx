@@ -15,7 +15,7 @@ import { authOptions } from '@/lib/auth';
 async function StoryPage() {
 
     const session = await getServerSession(authOptions);
-    const isAdmin = session?.user?.role === 'admin';
+    const isAdmin = session?.user?.role === 'ADMIN';
 
     // Fetch data in parallel
     const [earlyLife, playerCareers, coachingCareers] = await Promise.all([
