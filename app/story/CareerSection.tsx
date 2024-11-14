@@ -85,7 +85,7 @@ const CareerSection: React.FC<CareerSectionProps> = ({
 
             {/* Teams */}
             {teams.map((team, index) => (
-                <TeamSection key={index} team={team} editEndpoint={editEndpoint}/>
+                <TeamSection key={index} team={team} editEndpoint={editEndpoint} isAdmin={isAdmin}/>
             ))}
         </Box>
     );
