@@ -39,7 +39,7 @@ function NavBar(): JSX.Element {
               <DropdownMenu.Trigger>
                 <Button variant="ghost" size="1" className="p-0 ">
                   <Avatar
-                    src={`api/users/${session.user?.id}/image` || undefined}
+                    src={`api/users/${session.user?.id}/image`}
                     fallback={
                       session.user?.name ? session.user.name.charAt(0) : 'U'
                     }
