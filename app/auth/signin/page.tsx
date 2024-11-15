@@ -14,15 +14,18 @@ export default function SignInPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const errorParam = searchParams.get('error');
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   const [userInfo, setUserInfo] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
+    console.log('Callback URL:', callbackUrl);
+
     if (session) {
-      router.push('/');
+      router.replace(callbackUrl);
     }
-  }, [session, router]);
+  }, [session, router, callbackUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,12 +35,13 @@ export default function SignInPage() {
       redirect: false,
       email: userInfo.email,
       password: userInfo.password,
+      callbackUrl,
     });
 
     if (res?.error) {
       setError(res.error);
-    } else {
-      router.push('/');
+    } else if (res?.url) {
+      router.replace(res.url);
     }
   };
 
@@ -97,7 +101,7 @@ export default function SignInPage() {
             Sign In
           </button>
           <p className="text-center text-white mt-4">
-            Don't have an account?{' '}
+            Don&#39;t have an account?{' '}
             <Link href="/auth/register">
               <span className="text-primary hover:underline">Register</span>
             </Link>

@@ -7,9 +7,14 @@ import { useSession, signOut } from 'next-auth/react';
 import { Box, Flex, Button, Avatar, DropdownMenu } from '@radix-ui/themes';
 import Link from 'next/link';
 import NavLinks, { NavLink } from '@/components/NavLink';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 function NavBar(): JSX.Element {
   const { data: session } = useSession();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const queryString = searchParams.toString();
+  const fullPath = queryString ? `${pathname}?${queryString}` : pathname;
 
   const leftLinks: NavLink[] = [
     { label: 'Home', href: '/' },
@@ -39,7 +44,8 @@ function NavBar(): JSX.Element {
               <DropdownMenu.Trigger>
                 <Button variant="ghost" size="1" className="p-0 ">
                   <Avatar
-                    src={`api/users/${session.user?.id}/image`}
+                    key={session.user?.id}
+                    src={`api/users/${session.user?.id}/image?${Date.now()}`}
                     fallback={
                       session.user?.name ? session.user.name.charAt(0) : 'U'
                     }
@@ -58,7 +64,7 @@ function NavBar(): JSX.Element {
               </DropdownMenu.Content>
             </DropdownMenu.Root>
           ) : (
-            <Link href="/auth/signin">
+            <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(fullPath)}`}>
               <Button variant="solid" className="text-white" size="1">
                 Sign In
               </Button>
