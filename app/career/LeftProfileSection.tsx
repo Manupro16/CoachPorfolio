@@ -17,7 +17,7 @@ import { GiVenezuela, GiSoccerKick, GiSoccerField } from "react-icons/gi";
 import StatItem from "./StatItem";
 
 interface Props {
-  coachData: {
+  coachDataLeft: {
     name: string;
     tagline: string;
     profilePicture: string;
@@ -30,7 +30,9 @@ interface Props {
   };
 }
 
-function LeftProfileSection({ coachData }: Props) {
+const minWith = "80px"
+
+function LeftProfileSection({ coachDataLeft }: Props) {
   return (
     <Grid
       as="div"
@@ -43,17 +45,17 @@ function LeftProfileSection({ coachData }: Props) {
       <Flex as="div" direction="column" gapY="4" align="center" justify="start" className="mr-10 mb-5 md:mb-0">
         <div className="space-y-1">
           <Heading size="6" className="text-white font-bold">
-            {coachData.name}
+            {coachDataLeft.name}
           </Heading>
           <Text className="text-gray-200 italic text-sm leading-snug">
-            <Quote>{coachData.tagline}</Quote>
+            <Quote>{coachDataLeft.tagline}</Quote>
           </Text>
         </div>
 
         <Box className="relative w-48 h-48">
           <Image
-            src={coachData.profilePicture}
-            alt={`Profile picture of coach ${coachData.name}`}
+            src={coachDataLeft.profilePicture}
+            alt={`Profile picture of coach ${coachDataLeft.name}`}
             layout="fill"
             objectFit="cover"
             className="rounded-md"
@@ -79,43 +81,49 @@ function LeftProfileSection({ coachData }: Props) {
         <DataList.Root className="text-white space-y-2 text-sm">
           <StatItem
             label="Nationality"
-            value={coachData.nationality}
+            value={coachDataLeft.nationality}
             icon={<GiVenezuela className="text-base" />}
+            minWith={minWith}
           />
           <StatItem
             label="Age"
-            value={coachData.age}
+            value={coachDataLeft.age}
             icon={<FaBirthdayCake className="text-base" />}
+            minWith={minWith}
           />
           <StatItem
             label="Coaching Experience (Years)"
-            value={coachData.yearsOfExperienceCoach}
+            value={coachDataLeft.yearsOfExperienceCoach}
             icon={<GiSoccerKick className="text-base" />}
+            minWith={minWith}
           />
           <StatItem
             label="Playing Experience (Years)"
-            value={coachData.yearsOfExperiencePlayer}
+            value={coachDataLeft.yearsOfExperiencePlayer}
             icon={<GiSoccerField className="text-base" />}
+            minWith={minWith}
           />
           <StatItem
             label="Coach Status"
             value={
-              coachData.CoachStatus === "Active" ? (
+              coachDataLeft.CoachStatus === "Active" ? (
                 <Badge color="green">Active</Badge>
               ) : (
                 <Badge color="red">Inactive</Badge>
               )
             }
+            minWith={minWith}
           />
           <StatItem
             label="Player Status"
             value={
-              coachData.playerStatus === "Active" ? (
+              coachDataLeft.playerStatus === "Active" ? (
                 <Badge color="green">Active</Badge>
               ) : (
                 <Badge color="red">Inactive</Badge>
               )
             }
+            minWith={minWith}
           />
         </DataList.Root>
       </Flex>
