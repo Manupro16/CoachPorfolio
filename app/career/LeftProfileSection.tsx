@@ -1,11 +1,8 @@
-// LeftProfileSection.tsx
-
 import {
   Box,
   Flex,
   Heading,
   Text,
-  DataList,
   Quote,
   Grid,
   Badge,
@@ -14,7 +11,7 @@ import {
 import Image from "next/image";
 import { FaBirthdayCake } from "react-icons/fa";
 import { GiVenezuela, GiSoccerKick, GiSoccerField } from "react-icons/gi";
-import StatItem from "./StatItem";
+import StatDisplay from "./StatDisplay"; // The new component we created
 
 interface Props {
   coachDataLeft: {
@@ -30,9 +27,48 @@ interface Props {
   };
 }
 
-const minWith = "80px"
-
 function LeftProfileSection({ coachDataLeft }: Props) {
+  const stats = [
+    {
+      label: "Nationality:",
+      value: coachDataLeft.nationality,
+      icon: <GiVenezuela className="text-base" />,
+    },
+    {
+      label: "Age:",
+      value: coachDataLeft.age,
+      icon: <FaBirthdayCake className="text-base" />,
+    },
+    {
+      label: "Coaching Experience (Years):",
+      value: coachDataLeft.yearsOfExperienceCoach,
+      icon: <GiSoccerKick className="text-base" />,
+    },
+    {
+      label: "Playing Experience (Years):",
+      value: coachDataLeft.yearsOfExperiencePlayer,
+      icon: <GiSoccerField className="text-base" />,
+    },
+    {
+      label: "Coach Status:",
+      value:
+        coachDataLeft.CoachStatus === "Active" ? (
+          <Badge color="green">Active</Badge>
+        ) : (
+          <Badge color="red">Inactive</Badge>
+        ),
+    },
+    {
+      label: "Player Status:",
+      value:
+        coachDataLeft.playerStatus === "Active" ? (
+          <Badge color="green">Active</Badge>
+        ) : (
+          <Badge color="red">Inactive</Badge>
+        ),
+    },
+  ];
+
   return (
     <Grid
       as="div"
@@ -42,7 +78,7 @@ function LeftProfileSection({ coachDataLeft }: Props) {
       gap="4"
     >
       {/* Left Column: Basic Info */}
-      <Flex as="div" direction="column" gapY="4" align="center" justify="start" className="mr-10 mb-5 md:mb-0">
+      <Flex direction="column" gap="4" align="center" justify="start" className="mr-10 mb-5 md:mb-0">
         <div className="space-y-1">
           <Heading size="6" className="text-white font-bold">
             {coachDataLeft.name}
@@ -65,7 +101,6 @@ function LeftProfileSection({ coachDataLeft }: Props) {
 
       {/* Right Column: About and Stats */}
       <Flex
-        as="div"
         direction="column"
         align="start"
         justify="start"
@@ -75,57 +110,22 @@ function LeftProfileSection({ coachDataLeft }: Props) {
           About The Coach
         </Heading>
 
-        {/* Horizontal Separator below the heading */}
         <Separator size="4" color="blue" className="w-full opacity-50" />
+           <Grid
+                gap="4"
+                className="text-white text-sm w-full"
 
-        <DataList.Root className="text-white space-y-2 text-sm">
-          <StatItem
-            label="Nationality"
-            value={coachDataLeft.nationality}
-            icon={<GiVenezuela className="text-base" />}
-            minWith={minWith}
-          />
-          <StatItem
-            label="Age"
-            value={coachDataLeft.age}
-            icon={<FaBirthdayCake className="text-base" />}
-            minWith={minWith}
-          />
-          <StatItem
-            label="Coaching Experience (Years)"
-            value={coachDataLeft.yearsOfExperienceCoach}
-            icon={<GiSoccerKick className="text-base" />}
-            minWith={minWith}
-          />
-          <StatItem
-            label="Playing Experience (Years)"
-            value={coachDataLeft.yearsOfExperiencePlayer}
-            icon={<GiSoccerField className="text-base" />}
-            minWith={minWith}
-          />
-          <StatItem
-            label="Coach Status"
-            value={
-              coachDataLeft.CoachStatus === "Active" ? (
-                <Badge color="green">Active</Badge>
-              ) : (
-                <Badge color="red">Inactive</Badge>
-              )
-            }
-            minWith={minWith}
-          />
-          <StatItem
-            label="Player Status"
-            value={
-              coachDataLeft.playerStatus === "Active" ? (
-                <Badge color="green">Active</Badge>
-              ) : (
-                <Badge color="red">Inactive</Badge>
-              )
-            }
-            minWith={minWith}
-          />
-        </DataList.Root>
+            >
+                {stats.map((stat, idx) => (
+                    <StatDisplay
+                        key={idx}
+                        label={stat.label}
+                        value={stat.value}
+                        icon={stat.icon}
+                    />
+                ))}
+
+           </Grid>
       </Flex>
     </Grid>
   );
