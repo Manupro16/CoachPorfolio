@@ -31,7 +31,7 @@ function CareerProfile() {
     }
 
     return (
-        <Grid as="div" columns="1fr 1fr 1fr" rows="1fr" gapX="4" className="inset-0 bg-gradient-to-r from-black via-blue-950 opacity-90 to-black">
+        <Grid as="div" columns={{ initial: "1fr", md: "3" }} gapX="4" height="100%" width="100%" className="inset-0 bg-gradient-to-r from-black via-blue-950 opacity-90 to-black">
             <LeftProfileSection coachDataLeft={coachDataLeft}  />
             <RightProfileSection coachDataRight={coachDataRight} />
         </Grid>
