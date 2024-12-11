@@ -1,5 +1,5 @@
 import React from 'react';
-import {Avatar, Blockquote, Box, Flex, Grid, Heading, Quote, Separator, Text,} from "@radix-ui/themes";
+import {Avatar, Blockquote, Box, Flex, Grid, Heading, Quote, Separator,} from "@radix-ui/themes";
 
 // Import icons
 import {FaFutbol, FaHandshake, FaMedal, FaPercent, FaTimesCircle, FaUsers} from "react-icons/fa";
