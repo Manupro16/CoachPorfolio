@@ -5,14 +5,14 @@ import CareerProfile from "@/app/career/CareerProfile";
 
 function careerPageSection() {
     return (
-       <section className="w-screen h-screen">
-           <WebsiteBackgroundColor />
-           <Grid as="div" columns="1fr" rows="1fr 1fr 1fr" className=" w-screen h-screen ">
-                <CareerProfile/>
-               <div>Hello Section</div>
-               <div>Hello Section</div>
-           </Grid>
-       </section>
+        <section style={{ width: "100vw", height: "100vh" }}>
+            <WebsiteBackgroundColor />
+            <Grid as="div" width="100%" height="100%" columns="1" rows={{ initial: "1fr 1fr 1fr" }}>
+                 <CareerProfile/>
+                <div>Hello Section</div>
+                <div>Hello Section</div>
+            </Grid>
+        </section>
     )
 
 }
