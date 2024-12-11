@@ -3,6 +3,7 @@ import {Avatar, Blockquote, Box, Flex, Grid, Heading, Quote, Separator, Text,} f
 
 // Import icons
 import {FaFutbol, FaHandshake, FaMedal, FaPercent, FaTimesCircle, FaUsers} from "react-icons/fa";
+import StatDisplay from "@/app/career/StatDisplay";
 
 interface Props {
     coachDataRight: {
@@ -54,14 +55,13 @@ const MyComponent: React.FC<Props> = ({coachDataRight}) => {
             <Grid
                 gap="4"
                 className="text-white text-sm"
-                columns={{initial: "2", sm: "3", md: "3"}}
+                columns={{initial: "repeat(2, 1fr)", xs: "repeat(3, 1fr)", md: "repeat(3, 1fr)"}}
             >
                 {stats.map((stat, index) => (
-                    <Flex key={index} className="items-center gap-2 whitespace-normal break-words">
-                        <span className="text-xl">{stat.icon}</span>
-                        <Text className="font-bold">{stat.label}</Text>
-                        <Text>{stat.value}</Text>
-                    </Flex>
+                    <StatDisplay key={index}
+                                 label={stat.label}
+                                 value={stat.value}
+                                 icon={stat.icon}/>
                 ))}
             </Grid>
 
@@ -72,7 +72,7 @@ const MyComponent: React.FC<Props> = ({coachDataRight}) => {
                 Teams Coached as Head Coach
             </Heading>
             <Flex direction={{lg: 'row', md: "column"}} justify="start">
-                <Box as="div" className="mb-5">
+                <Box as="div" className="mb-5 space-x-4">
                     <Avatar
                         src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?&w=256&h=256&q=70&crop=focalpoint&fp-x=0.5&fp-y=0.3&fp-z=1&fit=crop"
                         fallback="A"
