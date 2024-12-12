@@ -79,7 +79,7 @@ function LeftProfileSection({coachDataLeft}: Props) {
             className="ml-5 mt-5"
         >
             {/* Left Column: Basic Info */}
-            <Flex direction="column" gap="4" align="center" justify="start" className="mr-10 mb-5 md:mb-0">
+            <Flex direction="column" gap="4" align="start" justify="start" className="mr-10 mb-5 md:mb-0">
                 <Box className="space-y-1">
                     <Heading size="6" className="text-white font-bold">
                         {coachDataLeft.name}
@@ -103,7 +103,7 @@ function LeftProfileSection({coachDataLeft}: Props) {
             {/* Right Column: About and Stats */}
             <Flex
                 direction="column"
-                align="start"
+                align="center"
                 justify="start"
                 className="border-l border-white/30 pl-2 space-y-4"
             >
