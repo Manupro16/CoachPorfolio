@@ -72,14 +72,12 @@ const RightProfileSection: React.FC<Props> = ({ coachDataRight }) => {
         <Heading size="4" className="font-bold" mb="2">
           Teams Coached as Head Coach
         </Heading>
-        <Flex direction={{ initial: "column", md: "row" }} gap="4" align="start" justify="start">
-          <Box as="div" >
+        <Flex direction={{ initial: "column", md: "row" }} gap="2" align="start" justify="start">
             <Avatar
               src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?&w=256&h=256&q=70&crop=focalpoint&fp-x=0.5&fp-y=0.3&fp-z=1&fit=crop"
               fallback="A"
             />
             <Avatar fallback="A" />
-          </Box>
         </Flex>
       </Box>
     </Box>
