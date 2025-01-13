@@ -13,7 +13,7 @@ interface Props {
   }
 }
 
-const RightProfileSection: React.FC<Props> = ({ coachDataRight }) => {
+const MiddleProfileSection: React.FC<Props> = ({ coachDataRight }) => {
   const stats = [
     { label: "Total Matches", value: coachDataRight.totalMatches, icon: <FaFutbol /> },
     { label: "Total Wins", value: coachDataRight.totalWins, icon: <FaMedal /> },
@@ -84,4 +84,4 @@ const RightProfileSection: React.FC<Props> = ({ coachDataRight }) => {
   );
 };
 
-export default RightProfileSection;
+export default MiddleProfileSection;
