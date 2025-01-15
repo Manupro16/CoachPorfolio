@@ -7,7 +7,7 @@ function careerPageSection() {
     return (
         <section style={{ width: "100vw", height: "100vh" }}>
             <WebsiteBackgroundColor />
-            <Grid as="div" width="100%" height="100%" columns="1" rows={{ initial: "1fr 1fr 1fr" }}>
+            <Grid as="div" width="100%" height="auto" columns="1" rows={{ initial: "1fr 1fr 1fr" }}>
                  <CareerProfile/>
                 <div>Hello Section</div>
                 <div>Hello Section</div>
