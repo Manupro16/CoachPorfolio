@@ -10,7 +10,10 @@ import {
   Avatar, Box,
 } from "@radix-ui/themes"; // Or the specific imports your version supports
 import { usePathname, useSearchParams } from "next/navigation";
-import { NavLink } from "@/components/NavLink"; // If you have a separate interface
+import { NavLink } from "@/components/NavLink";
+import {Session} from "next-auth"; // If you have a separate interface
+import { signOut as signOutType } from "next-auth/react"; // optional if you want exact signOut signature
+
 
 // Example link sets
 const leftLinks: NavLink[] = [
@@ -109,7 +112,7 @@ function NavItem({ link }: { link: NavLink }) {
  * The avatar + sign-out dropdown for authenticated user
  * (on desktop).
  */
-function AvatarMenu({ session, signOut }: any) {
+function AvatarMenu({ session, signOut }: { session: Session, signOut: typeof signOutType}){
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
@@ -141,7 +144,7 @@ function AvatarMenu({ session, signOut }: any) {
  * The mobile menu, uses a single "Menu" or "Options" button,
  * displaying all links in a vertical dropdown
  */
-function MobileDropdown({ session, fullPath }: any) {
+function MobileDropdown({ session, fullPath }: { session: Session | null, fullPath: string }) {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>
