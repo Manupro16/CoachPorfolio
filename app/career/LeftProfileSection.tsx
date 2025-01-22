@@ -78,61 +78,62 @@ function LeftProfileSection({coachDataLeft}: Props) {
             gap="2"
             className="ml-5 mt-5"
         >
-            {/* Left Column: Basic Info */}
-            <Flex direction="column" gap="4" align="start" justify="start" className="mr-10 mb-5 md:mb-0">
-                <Box className="space-y-1">
-                    <Heading size="6" className="text-white font-bold">
-                        {coachDataLeft.name}
+
+                {/* Left Column: Basic Info */}
+                <Flex direction="column" gap="4" align="start" justify="start" className="mr-10 mb-5 md:mb-0">
+                    <Box className="space-y-1">
+                        <Heading size="6" className="text-white font-bold">
+                            {coachDataLeft.name}
+                        </Heading>
+                        <Text className="text-gray-200 italic text-sm leading-snug">
+                            <Quote>{coachDataLeft.tagline}</Quote>
+                        </Text>
+                    </Box>
+
+                    <Box className="relative w-48 h-48">
+                        <Image
+                            src={coachDataLeft.profilePicture}
+                            alt={`Profile picture of coach ${coachDataLeft.name}`}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-md"
+                        />
+                    </Box>
+                </Flex>
+
+                {/* Right Column: About and Stats */}
+                <Flex
+                    direction="column"
+                    align="center"
+                    justify="start"
+                    className="border-l border-white/30 pl-2 space-y-4"
+                >
+                    <Heading size="6" className="text-white">
+                        About The Coach
                     </Heading>
-                    <Text className="text-gray-200 italic text-sm leading-snug">
-                        <Quote>{coachDataLeft.tagline}</Quote>
-                    </Text>
-                </Box>
 
-                <Box className="relative w-48 h-48">
-                    <Image
-                        src={coachDataLeft.profilePicture}
-                        alt={`Profile picture of coach ${coachDataLeft.name}`}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-md"
-                    />
-                </Box>
-            </Flex>
+                    <Separator size="4" color="blue" className="w-full opacity-50"/>
 
-            {/* Right Column: About and Stats */}
-            <Flex
-                direction="column"
-                align="center"
-                justify="start"
-                className="border-l border-white/30 pl-2 space-y-4"
-            >
-                <Heading size="6" className="text-white">
-                    About The Coach
-                </Heading>
-
-                <Separator size="4" color="blue" className="w-full opacity-50"/>
-
-                {/* DataList:
-            - Vertical on small screens (initial through md)
-            - Horizontal on large screens (lg and above)
-        */}
-                <DataList.Root orientation={{initial: "horizontal", xl: "horizontal", lg: "vertical"}} size="2"
-                               className="text-sm w-full">
-                    {stats.map((stat, idx) => (
-                        <DataList.Item key={idx} align="center">
-                            <DataList.Label
-                                // On smaller screens (initial): no minWidth or a smaller one
-                                // On larger screens (lg): 120px
-                                minWidth={{initial: "auto", xl: "120px", lg: "auto"}}>
-                                {stat.icon && <span className="inline-block mr-2">{stat.icon}</span>}
-                                {stat.label}
-                            </DataList.Label>
-                            <DataList.Value>{stat.value}</DataList.Value>
-                        </DataList.Item>
-                    ))}
-                </DataList.Root>
-            </Flex>
+                    {/* DataList:
+                - Vertical on small screens (initial through md)
+                - Horizontal on large screens (lg and above)
+            */}
+                    <DataList.Root orientation={{initial: "horizontal", xl: "horizontal", lg: "vertical"}} size="2"
+                                   className="text-sm w-full">
+                        {stats.map((stat, idx) => (
+                            <DataList.Item key={idx} align="center">
+                                <DataList.Label
+                                    // On smaller screens (initial): no minWidth or a smaller one
+                                    // On larger screens (lg): 120px
+                                    minWidth={{initial: "auto", xl: "120px", lg: "auto"}}>
+                                    {stat.icon && <span className="inline-block mr-2">{stat.icon}</span>}
+                                    {stat.label}
+                                </DataList.Label>
+                                <DataList.Value>{stat.value}</DataList.Value>
+                            </DataList.Item>
+                        ))}
+                    </DataList.Root>
+                </Flex>
         </Grid>
     );
 }

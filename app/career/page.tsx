@@ -5,10 +5,10 @@ import CareerProfile from "@/app/career/CareerProfile";
 
 function careerPageSection() {
     return (
-        <section style={{ width: "100vw" }}>
+        <section className="w-full relative">
             <WebsiteBackgroundColor />
             <Grid as="div" width="100%"  columns="1" rows={{ initial: "1fr 1fr 1fr" }}>
-                 <CareerProfile/>
+                <CareerProfile/>
                 <div>Hello Section</div>
                 <div>Hello Section</div>
             </Grid>
