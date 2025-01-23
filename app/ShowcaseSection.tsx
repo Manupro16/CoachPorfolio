@@ -6,7 +6,8 @@ import React from 'react';
 import {Box, Button, Flex, Grid, Heading, Text} from '@radix-ui/themes';
 import VideoCard from '@/components/VideoCard';
 import useGsapWaveAnimation from '../hooks/useGsapWaveAnimation';
-import Link from "next/link"; // Import the custom hook
+import Link from "next/link";
+import WebsiteBackgroundColor from "@/components/WebsiteBackgroundColor"; // Import the custom hook
 
 function ShowcaseSection() {
     const showcases = [
@@ -63,12 +64,9 @@ function ShowcaseSection() {
     useGsapWaveAnimation(animations);
 
     return (
-        <section className="relative overflow-hidden">
+        <section className="relative w-full overflow-hidden bg-black/10">
             {/* Background Gradient */}
-            <Box
-                as="div"
-                className="absolute inset-0 bg-gradient-to-r from-black via-primaryDark to-black opacity-30 pointer-events-none z-0"
-            />
+            <WebsiteBackgroundColor />
 
             {/* Top SVG Wave */}
             <Box
@@ -90,30 +88,34 @@ function ShowcaseSection() {
             {/* Main Content Grid */}
             <Grid
                 as="div"
-                className="relative z-10 h-screen w-full grid grid-rows-[auto, 1fr, auto] items-center justify-center"
-                columns="1fr 1fr"
+                className="relative z-10 w-full min-h-screen py-8 px-4 sm:px-6 lg:px-8"
+                columns={{ initial: '1' }}
+                rows="auto"
+                gapY={{ initial: '4', md: "8" }}
             >
-                {/* Header Section */}
+                 {/* Header Section */}
                 <Flex
                     as="div"
                     direction="column"
                     align="center"
-                    className="text-center py-8 px-4 sm:px-6 lg:px-8 col-span-2"
+                    gap="2"
                 >
-                    <Heading size="8" className="text-textLight mb-4">
+                    <Heading size="8" className="text-textLight mb-2 text-center">
                         No Matter Where He Goes, His Philosophies and Style Remain the Same
                     </Heading>
-                    <Text size="4" className="text-textMuted max-w-2xl">
-                        An introduction to the history of Chuy Vera's amazing soccer career. This showcase provides you with clips of his teams in each season and his impact on the club.
+                    <Text size="4" className="text-textMuted max-w-2xl text-center">
+                        An introduction to the history of Chuy Vera&#39;s amazing soccer career. This showcase provides you with clips of his teams in each season and his impact on the club.
                     </Text>
                 </Flex>
 
-                {/* Video Cards Section */}
+
+                 {/*Video Cards Section */}
                 <Flex
-                    as="div"
-                    className="col-span-2 z-10 py-8 px-4 sm:px-6 lg:px-8"
+                    direction="column"
+                    className="w-full py-8 px-4 sm:px-6 lg:px-8"
                     align="center"
                     justify="center"
+                    as="div"
                 >
                     <Grid
                         columns={{ initial: '1', sm: '1', md: '2', lg: '3' }}
@@ -131,7 +133,7 @@ function ShowcaseSection() {
                     as="div"
                     justify="center"
                     align="start"
-                    className="col-span-2 z-10 py-4"
+                    className="z-10 py-4"
                 >
                     <Link href="/teams">
                         <Button className="px-6 py-3 bg-primary text-white rounded-lg shadow-lg hover:bg-primaryDark transition-colors">
@@ -154,7 +156,7 @@ function ShowcaseSection() {
                     <path
                         id="showcaseWavePathBottom" // Add ID for GSAP animation
                         d="M0,192 C144,160,288,128,432,133.3 C576,138.7,720,170.7 864,165.3 C1008,160,1152,117,1296,101.3 C1440,85.3,1584,96,1728,106.7 L1728,320 L0,320 Z"
-                    ></path>
+                    />
                 </svg>
             </Box>
         </section>
